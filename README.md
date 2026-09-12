@@ -84,4 +84,4 @@ python scripts/verify_completed_run.py outputs/RUN_ID
 
 ## Citation and license
 
-Citation metadata are provided in [CITATION.cff](CITATION.cff). A software license has not yet been declared by the author team; until one is added, the source remains under default copyright protection.
+Citation metadata are provided in [CITATION.cff](CITATION.cff). Original source code and documentation in this repository are released under the [BSD 3-Clause License](LICENSE). That license does not cover third-party packages, datasets, model checkpoints, or externally staged source code. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the scope of the release.

@@ -2,9 +2,10 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the associated manuscript."
 title: "Geroprotector prediction benchmark and explainability workflows"
 type: software
-version: 0.1.0
+version: 1.0.0
 date-released: 2026-09-12
 repository-code: "https://github.com/HienKha/geroprotector_prediction"
+license: BSD-3-Clause
 authors:
   - family-names: Pham
     given-names: Ngoc-Thac

@@ -41,7 +41,7 @@ if [[ -e "$ROOT/outputs/$RUN_ID" ]]; then
   exit 2
 fi
 if ! "$PYTHON_BIN" -c "import tabfm" >/dev/null 2>&1; then
-  echo "tabfm is missing from this interpreter. Install the vendored copy with:" >&2
+  echo "tabfm is missing from this interpreter. Install a locally staged upstream copy with:" >&2
   echo "  cd $ROOT/third_party/tabfm && $PYTHON_BIN -m pip install -e '.[pytorch]'" >&2
   exit 3
 fi

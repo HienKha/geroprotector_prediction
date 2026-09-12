@@ -3,13 +3,15 @@ Geroprotector prediction implementation package contents
 Generated deterministically; excludes caches, runtime checkpoints/licenses, artifacts, outputs and this file.
 
 .gitignore	371 bytes
-CITATION.cff	1027 bytes
+CITATION.cff	1049 bytes
 DATA_AND_MODEL_ACCESS.md	2216 bytes
 LEAKAGE_CONTRACT.md	5849 bytes
+LICENSE	1532 bytes
 PAPER80_BIS_PROTOCOL.md	1741 bytes
-README.md	4464 bytes
+README.md	4634 bytes
 REFERENCES.md	11409 bytes
 REPRODUCING.md	3339 bytes
+THIRD_PARTY_NOTICES.md	1440 bytes
 configs/agextend_endpoint_benchmark_protocol.yaml	2572 bytes
 configs/agextend_official_reference_protocol.yaml	2544 bytes
 configs/blend7feat_paper_descriptors_protocol.yaml	4294 bytes
@@ -73,7 +75,7 @@ configs/v9.yaml	811 bytes
 configs/validation.yaml	2359 bytes
 configs/weighted_blend_paper405.yaml	2786 bytes
 configs/weighted_blend_tabfm_protocol.yaml	2827 bytes
-pyproject.toml	1039 bytes
+pyproject.toml	1070 bytes
 requirements-lock.txt	271 bytes
 requirements-traditional-lock.txt	105 bytes
 schemas/assay_observation.schema.json	2862 bytes
@@ -114,9 +116,9 @@ scripts/run_screening_blend_ablation_paper_svm.sh	531 bytes
 scripts/run_screening_blend_altmodels.sh	1505 bytes
 scripts/run_screening_blend_external.sh	447 bytes
 scripts/run_screening_blend_paper405.sh	990 bytes
-scripts/run_screening_blend_tabfm.sh	1448 bytes
+scripts/run_screening_blend_tabfm.sh	1461 bytes
 scripts/run_tabpfn3_paper405.sh	1276 bytes
-scripts/run_tddi_fs_blend.sh	2888 bytes
+scripts/run_tddi_fs_blend.sh	2901 bytes
 scripts/run_traditional_paper405.sh	936 bytes
 scripts/run_v5.sh	747 bytes
 scripts/run_v5bis.sh	762 bytes
