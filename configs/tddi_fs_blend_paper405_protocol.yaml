@@ -1,0 +1,155 @@
+schema_version: geroprotector.tddi_fs_blend_paper405.protocol.v1
+scientific_role: >-
+  T-DDI-style feature selection applied to the deep/foundation components only,
+  then an equal-thirds blend of the published paper SVM, TabPFN-v2 and TabFM,
+  evaluated by 5-fold CV on D1 train, a locked 81-row test, and both externals.
+
+# ---------------------------------------------------------------------------
+# Feature selection, transcribed from the T-DDI paper.
+#   Fulltext.pdf, Methods p.17  -- the pipeline and every threshold below
+#   Supplementary_document.pdf, Supplementary Table 3, p.14 -- the K sweep design
+#
+# T-DDI's own words: descriptor audit (all-missing / missingness > 0.995 /
+# near-zero variance 1e-10) -> training-sample median imputation -> ANOVA
+# F-statistic ranking -> Pearson-correlation-aware priority step at |r| > 0.995
+# -> RFE to predefined counts K -> retrain from scratch under the same k-fold CV
+# protocol, fold splits and seed schedule for the full set and each reduced
+# variant, and pick the operating dimensionality from that sweep.
+#
+# The only adaptation is scale.  T-DDI ranked 3,780 PyBioMed descriptors; our
+# candidate pool is the 217 RDKit2D descriptors, so the K ladder is rescaled by
+# roughly the same geometry.  Its floor is 7 -- the Geroprotectors paper's
+# descriptor count -- as instructed.
+# ---------------------------------------------------------------------------
+feature_selection:
+  source_paper: T-DDI (Fulltext.pdf Methods p.17; Supplementary Table 3 p.14)
+  applies_to: dl_components_only
+  fitted_on: d1_train_rows_only_324
+  audit_missing_ratio_threshold: 0.995
+  audit_variance_threshold: 1.0e-10
+  imputation: training_sample_medians
+  ranking: anova_f_classif
+  correlation_abs_threshold: 0.995
+  reduction: RFE
+  rfe_step: 1
+  rfe_estimator_C: 1.0
+  # Full pool -> post-audit -> RFE ladder, floor at the paper's 7 descriptors.
+  k_ladder: [200, 175, 150, 125, 100, 75, 50, 30, 20, 15, 10, 7]
+  k_chosen_by: retraining_under_the_same_5fold_cv_and_seed_schedule
+
+# ---------------------------------------------------------------------------
+# The SVM slot is NEVER feature-selected and NEVER refitted.  Its probabilities
+# are read verbatim out of the sealed runs, which means it is exactly the
+# published SVC on exactly the paper's seven DataWarrior descriptors on every
+# cohort -- including both externals, whose DataWarrior columns cannot be
+# recomputed here (no Java toolchain).
+# ---------------------------------------------------------------------------
+svm_component:
+  source: sealed_streams_never_refitted
+  feature_set: paper_7_datawarrior_descriptors
+  feature_selected: false
+  hyperparameters: >-
+    SVC(kernel='linear', C=1, gamma=1, probability=True, random_state=42)
+    exactly as published
+  streams:
+    cv5_train_oof: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    d1_test: outputs/weightedblend405_20260817/test_component_predictions.csv
+    drugage: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    agextend: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+
+tanimoto:
+  status: untouched
+  note: not a component of this blend; no Tanimoto artifact is written or altered
+
+blend:
+  components: [svm_paper_setting, tabpfn_v2, tabfm]
+  weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+  weights_selected_from_data: false
+  primary_threshold_source: d1_train_324_cross_fitted_oof_mcc
+  secondary_fixed_threshold: 0.5
+
+tabfm:
+  repository: https://github.com/google-research/tabfm
+  repository_commit: fbb665569425fd2f490c6576b3af967876fe11ff
+  vendored_path: third_party/tabfm
+  required_package_version: 1.0.1
+  backend: pytorch
+  device: cuda
+  huggingface_repo: google/tabfm-1.0.0-pytorch
+  weights_license: tabfm-non-commercial-v1.0
+  hyperparameters:
+    n_estimators: 4
+    softmax_temperature: 0.9
+    max_num_features: 500
+    max_num_rows: null
+
+tabpfn_v2:
+  required_package_version: 8.0.8
+  explicit_model_version: V2
+  checkpoint_path: checkpoints/tabpfn-v2-classifier.ckpt
+  checkpoint_sha256: f65a35685aeef42e31b796d9bfa34e68d6fc780bc98e7bff7763802964cf435f
+  device: cuda
+  softmax_temperature: 0.9
+  hyperparameters:
+    n_estimators: 8
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+  rows: d1_train_only_324
+  note: >-
+    Identical fold construction to every other CV run in this project, so the
+    numbers line up row-for-row with outputs/cv5_paper_metrics_20260821.
+
+endpoints:
+  d1_paper_test: paper_binary
+  drugage: significant_positive_retrieval_background_not_certified_negative
+  agextend: published_independent_table6_binary
+
+contract:
+  k_selection_metric: auprc
+  test_or_external_labels_used_for_selection_or_threshold: false
+  nested_fs_cross_validation_reported: true
+  nested_note: >-
+    T-DDI fits its FS pipeline once on the development partition and then reports
+    CV over those same rows, which makes the sweep CV mildly selection-optimistic.
+    We reproduce that protocol faithfully AND additionally report a nested variant
+    that refits the entire FS pipeline inside each fold, so the leakage-clean
+    estimate is available to referees.
+
+sealed_inputs:
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  eq_thirds_comparison:
+    path: outputs/blend_comparison_svm_tani_v2_bishop_20260819/comparison_metrics.csv
+    sha256: 6a556f2d400d4055342503372acb35af302af7775076639ceef647f24f9c87c7
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

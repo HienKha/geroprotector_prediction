@@ -1,0 +1,68 @@
+schema_version: geroprotector.blend_xai_v4.protocol.v1
+scientific_role: head_to_head_explainability_triple_vs_quadruple_equal_weight_blend
+compared_models:
+  triple_no_tanimoto:
+    components:
+    - paper_svm
+    - tabpfn_v2
+    - tabfm
+    weights: equal thirds
+  quad_with_tanimoto:
+    components:
+    - paper_svm
+    - tanimoto_svc
+    - tabpfn_v2
+    - tabfm
+    weights: equal quarters
+contract:
+  fixed_threshold: 0.5
+  any_model_is_refitted: false
+  threshold_is_selected_or_tuned: false
+  test_or_external_labels_used_to_choose_model_weight_or_threshold: false
+  note: Both models are equal-weight averages of components already fitted on the
+    324 D1 training rows and scored once, so both are locked models with prespecified
+    weights. The Tanimoto similarity used in the applicability-domain section is a
+    property of chemical space, not a model component, and is available to both.
+insight_criteria:
+  prespecified_before_any_v4_result: true
+  criteria:
+  - discrimination_per_metric
+  - calibration_ece
+  - calibration_brier
+  - calibration_slope_distance_from_1
+  - best_error_detection_auroc
+  - component_redundancy
+  direction: higher_is_better_except_ece_brier_slope_distance_and_redundancy
+applicability:
+  similarity: morgan_radius2_2048bit_tanimoto_to_locked_d1_train
+  tanimoto_cutoffs:
+  - 0.3
+  - 0.4
+  - 0.5
+  - 0.6
+  report_prevalence_adjusted_ap: true
+chemical_classes:
+  inherited_verbatim_from: blend_xai_v2
+  prespecified_before_inspecting_class_results: true
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+sealed_inputs:
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  quad_train_oof:
+    path: outputs/quad_blend_20260822/cv5_train_oof_predictions.csv
+    sha256: 15e0b69cda172d2d9167d901d21a0669d418e41862cb82fcc289ad76adee4b84
+  quad_d1_test:
+    path: outputs/quad_blend_20260822/predictions_d1_test.csv
+    sha256: 07b9eeb9d20b3a3f5381fe8f8bcce191a77a2a830835c6718f1d4b8dfb4542e0
+  quad_drugage:
+    path: outputs/quad_blend_20260822/predictions_drugage.csv
+    sha256: b0da780cd3ae12fa66ef9b2a6223cd36c79d2e183e6540f7a64665887da1dbec
+  quad_agextend:
+    path: outputs/quad_blend_20260822/predictions_agextend.csv
+    sha256: 746c276d6342a807ffa24a20be93b0462f935bbfd2e12300003af879e765fff5
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

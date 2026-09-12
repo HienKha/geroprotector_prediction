@@ -1,0 +1,38 @@
+schema_version: geroprotector.modelwide_druglikeness_bias.protocol.v1
+protocol_status: corrected_protocol_declared_before_20260826_rerun
+scientific_role: model_wide_within_positive_drug_likeness_bias_audit
+panel: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm, catboost_full,
+        xgboost_full, lightgbm_full, tabm_full, blend3_equal, gb4_equal]
+cohorts:
+  primary: d1_train_oof
+  descriptive_post_lock: [d1_test, drugage, agextend]
+  pooling_across_cohorts: forbidden
+structure_contract:
+  model_input_structure: source_smiles
+  rationale: all component streams within a cohort must score the identical structure string
+  molecular_identity_structure: standardized_parent_smiles
+  primary_qed: standardized_parent
+  sensitivity_qed: source_smiles
+  primary_applicability: source_smiles_query_vs_source_smiles_active_fit_rows
+  identity_applicability_sensitivity: standardized_parent_query_vs_standardized_parent_fit_rows
+  maximum_allowed_recomputed_vs_sealed_model_input_tanimoto_deviation: 1.0e-6
+threshold: {fixed: 0.5, tuned: false}
+qed_strata: [[0.0, 0.3], [0.3, 0.5], [0.5, 0.7], [0.7, 1.0]]
+bootstrap: {unit: compound, n_resamples: 10000, seed: 20260825, confidence_level: 0.95}
+permutations: {n: 100, seed: 20260825}
+multiplicity: {method: holm, scope: within_cohort_and_inferential_family}
+analyses:
+  - spearman_qed_probability
+  - qed_stratum_recall_wilson_ci
+  - cochran_armitage_trend
+  - logistic_retrieval_on_standardized_qed
+  - logistic_retrieval_on_standardized_qed_plus_active_fit_tanimoto
+  - fold_local_qed_and_basic_property_baselines
+  - prevalence_baseline
+  - class_property_shifts
+  - label_permutation_control
+leakage:
+  model_or_weight_selection: false
+  threshold_selection: false
+  external_outcomes_used_for_fitting_or_selection: false
+immutability: {existing_outputs_modified: false, destination_must_not_exist: true}

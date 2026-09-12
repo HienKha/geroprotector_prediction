@@ -1,0 +1,94 @@
+primary_split:
+  name: similarity_components
+  fingerprint:
+    family: morgan_bit
+    radius: 2
+    n_bits: 2048
+    use_chirality: false
+  edge_threshold: 0.40
+  outer_repeats: 5
+  outer_folds: 5
+  outer_seeds: [41, 42, 43, 44, 45]
+  approximate_stratification: true
+  group_unit: connected_component
+
+inner_cv:
+  folds: 3
+  group_unit: primary_component
+  seeds: [101, 102, 103]
+  registry_role: locked_once_shared_by_all_pipelines
+
+secondary_splits:
+  - name: murcko_scaffold
+    acyclic_policy: fingerprint_cluster
+  - name: identity_grouped_stratified
+  - name: paper_random_80_20
+    seed: 42
+    role: contextual_only
+
+selection:
+  primary_metric: ap_positive
+  tie_breaks:
+    - tolerance: 0.005
+      metric: auroc
+      direction: maximize
+    - tolerance: 0.005
+      metric: brier
+      direction: minimize
+    - metric: complexity
+      direction: minimize
+
+calibration:
+  primary: platt
+  sensitivities: [beta]
+  fit_source: inner_oof_only
+  isotonic_min_effective_n: 200
+
+threshold:
+  role: secondary
+  objective: mcc
+  fit_source: inner_oof_calibrated
+
+metrics:
+  threshold_free: [ap_positive, ap_negative, auroc, brier, brier_skill]
+  thresholded: [mcc, balanced_accuracy, macro_f1, sensitivity, specificity, precision, npv]
+  calibration: [ece_fixed, ece_adaptive, calibration_intercept, calibration_slope]
+  screening:
+    - precision_at_10
+    - precision_at_20
+    - precision_at_50
+    - recall_at_10
+    - recall_at_20
+    - recall_at_50
+    - enrichment_top_1pct
+    - enrichment_top_5pct
+    - enrichment_top_10pct
+    - bedroc_alpha_20
+
+bootstrap:
+  paired: true
+  unit: primary_component
+  n_resamples: 10000
+  seed: 20260408
+  confidence_level: 0.95
+  multiple_testing: holm
+
+applicability:
+  nearest_train_tanimoto: true
+  robust_descriptor_distance: true
+  risk_coverage_curve: true
+  thresholds_selected_without_external_outcomes: true
+  min_nearest_train_tanimoto: 0.20
+  robust_descriptor_train_quantile: 0.95
+
+external_firewall:
+  hagr_role: reused_historical_stress_test
+  hagr_development_access: false
+  external2_score_once: true
+  adaptation_requires_second_untouched_set: true
+
+registry_outputs:
+  outer: artifacts/splits/split_registry.parquet
+  inner: artifacts/splits/inner_split_registry.parquet
+  manifest: artifacts/splits/split_manifest.json
+  representation: one_validation_assignment_per_compound_per_context

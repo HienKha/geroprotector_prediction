@@ -1,0 +1,51 @@
+schema_version: geroprotector.screening_blend_paper405.protocol.v1
+scientific_role: locked_candidate_ranking_model_with_post_lock_descriptive_analysis
+headline_eligible: false
+
+source_runs:
+  weighted_run_id: weightedblend405_20260817
+  weighted_completed_sha256: f3daabf59f937ddae9e3f470eced0ae80f0baaa66972ac66cb7d88e8123b468c
+  traditional_run_id: traditional405_20260817
+  traditional_completed_sha256: 40dea87b5160f5cc392dbb508aaf2ca573d974c5c86612fbef763e22af4adb77
+
+locked_model:
+  candidate_id: svm_0.10_tanimoto_0.60_tabpfn_0.30
+  components: [paper_svm, tanimoto_svc, tabpfn_v2]
+  weights: [0.10, 0.60, 0.30]
+  selection_source: full_324_train_cross_fitted_oof_only
+  outer_test_used_for_weight_selection: false
+  intended_use: compound_ranking_and_screening_prioritization
+
+decision_bundles:
+  oof_mcc:
+    decision_threshold: 0.5299579802368826
+    threshold_source: full_324_train_cross_fitted_oof_mcc
+  fixed_0p5:
+    decision_threshold: 0.5
+    threshold_source: prespecified_probability_cutoff
+
+post_lock_analysis:
+  role: descriptive_test_analysis_for_locked_models_not_selection
+  bootstrap:
+    resamples: 10000
+    seed: 20260817
+    confidence_level: 0.95
+    sampling: paired_stratified_raw_test_rows
+  threshold_grid:
+    minimum: 0.0
+    maximum: 1.0
+    step: 0.001
+  decision_curve:
+    minimum: 0.01
+    maximum: 0.99
+    step: 0.01
+  top_k: [1, 5, 10, 20, 40, 81]
+  test_labels_may_change_model_or_threshold: false
+  multiplicity_role: exploratory_no_claim_of_significance_without_interval_support
+
+external_firewall:
+  development_outcomes_loaded: false
+  hagr_or_drugage_used_for_model_selection: false
+  agextend_used_for_model_selection: false
+  prediction_lock_required_before_outcome_access: true
+  thresholds_may_be_reoptimized_externally: false

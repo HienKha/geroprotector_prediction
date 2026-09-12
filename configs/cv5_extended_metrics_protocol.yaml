@@ -1,0 +1,36 @@
+schema_version: geroprotector.cv5_extended_metrics.protocol.v1
+scientific_role: >-
+  f1_variants_for_the_five_fold_d1_train_cross_validation,
+  explicitly_flagged_as_metrics_beyond_the_source_papers_reported_set
+
+contract:
+  metrics_are_beyond_the_source_paper_set: true
+  nothing_is_refitted: true
+  train_rows_only: true
+  test_rows_used: false
+  external_rows_used: false
+  note: >-
+    The source paper's official notebook (BioAgeLab/Geroprotectors-Project-INGER
+    @ c8f4589, 2.SVM_model/SVM_model_CODE.ipynb) reports accuracy, confusion
+    matrix, specificity and Cohen's kappa only. It computes NO F1. These F1
+    values are therefore an addition; there is no published F1 to compare
+    against. Kept in a separate run from cv5_paper_metrics so the paper-metric
+    table stays contractually clean.
+
+expected:
+  n_rows: 324
+  n_folds: 5
+
+f1_variants:
+  - f1_positive     # binary F1 for the positive (geroprotector) class
+  - f1_macro        # unweighted mean over both classes
+  - f1_weighted     # support-weighted mean over both classes
+
+sealed_inputs:
+  cv5_per_row_predictions:
+    path: outputs/cv5_paper_metrics_20260821/cv5_per_row_predictions.csv
+    sha256: a3c6eb1d28c4ad98b92dd5c12cd6a03a7734756802a25c79aab969d2fbb49a36
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

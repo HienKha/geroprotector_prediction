@@ -1,0 +1,5 @@
+pipeline: V6BIS_PAPER80
+extends: [v6.yaml, paper80.yaml]
+base_pipeline: V6_TABULAR_FOUNDATION_MODELS
+protocol_resolution: V6_unchanged_model_pipeline_on_locked_identity_safe_paper80_holdout
+checkpoint_ledger: artifacts/checkpoints/v6bis/checkpoint_ledger.json

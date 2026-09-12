@@ -1,0 +1,52 @@
+schema_version: geroprotector.cv5_significance.protocol.v1
+scientific_role: >-
+  paired_significance_testing_of_the_equal_thirds_tabfm_blend_against_the_other
+  models_on_the_five_fold_d1_train_cross_validation
+
+contract:
+  nothing_is_refitted: true
+  train_rows_only: true
+  test_rows_used: false
+  external_rows_used: false
+  note: >-
+    Reads the sealed per-row CV predictions and derives all statistics from
+    them. Primary evidence is the paired compound-level bootstrap and McNemar's
+    exact test. The per-fold paired t-test is computed for completeness but is
+    supplementary only: n=5 and CV folds share training data, violating the
+    independence assumption (Dietterich 1998; Nadeau & Bengio 2003).
+
+comparison:
+  reference_model: blend_eq_thirds_tabfm
+  compared_against:
+    - blend_eq_thirds_tabpfnv2
+    - paper_svm_fixed_0p5
+    - paper_svm_native
+  decision_rule: >-
+    fixed 0.5 for all probability streams; paper_svm_native additionally uses the
+    SVM's own SVC.predict() decision as refitted per fold.
+
+metrics: [accuracy, specificity, sensitivity, cohen_kappa, f1_positive, f1_macro]
+
+bootstrap:
+  resamples: 10000
+  seed: 20260821
+  unit: compound
+  type: paired_percentile
+  interval: 95
+
+multiplicity:
+  method: holm_bonferroni
+  family: the_six_metrics_within_each_comparison
+
+expected:
+  n_rows: 324
+  n_folds: 5
+
+sealed_inputs:
+  cv5_per_row_predictions:
+    path: outputs/cv5_paper_metrics_20260821/cv5_per_row_predictions.csv
+    sha256: a3c6eb1d28c4ad98b92dd5c12cd6a03a7734756802a25c79aab969d2fbb49a36
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

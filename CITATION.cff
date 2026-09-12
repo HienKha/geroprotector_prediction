@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the associated manuscript."
+title: "Geroprotector prediction benchmark and explainability workflows"
+type: software
+version: 0.1.0
+date-released: 2026-09-12
+repository-code: "https://github.com/HienKha/geroprotector_prediction"
+authors:
+  - family-names: Pham
+    given-names: Ngoc-Thac
+  - family-names: Nguyen
+    given-names: Duc-Quang-Anh
+  - family-names: Pham
+    given-names: Phuong Thao
+  - family-names: Huynh
+    given-names: Uyen Khoi-Minh
+  - family-names: Phung
+    given-names: Minh-Thu
+  - family-names: Le
+    given-names: Huong-Giang
+  - family-names: Pham Van Hoang
+    given-names: Phi
+  - family-names: Do
+    given-names: Thi Hong Tuoi
+  - family-names: Peng
+    given-names: Bo-Rong
+  - family-names: Tran Huynh
+    given-names: Quoc Dung
+  - family-names: Dang
+    given-names: Xuan Cuong
+  - family-names: Kao
+    given-names: Cheng-Yen
+  - family-names: Kha
+    given-names: Quang-Hien
+  - family-names: Lai
+    given-names: Kuei-Hung

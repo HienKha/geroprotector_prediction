@@ -1,0 +1,91 @@
+pipeline: V5_ELIXIRFP_REBUILT
+extends: [data.yaml, validation.yaml]
+protocol_resolution: README_normative_config_reconciled_20260815
+representation:
+  fingerprint_candidates:
+    morgan_bit:
+      radii: [1, 2, 3]
+      n_bits: [256, 512, 1024, 2048]
+      use_chirality: [false, true]
+    morgan_count:
+      radii: [2, 3]
+      n_bits: [512, 1024, 2048]
+      use_chirality: [false, true]
+    rdkit_path:
+      n_bits: [512, 1024, 2048]
+      min_path: 1
+      max_path: 7
+    maccs:
+      n_bits: [167]
+  fixed_descriptor_panel: chemistry_32
+  cache_role: molecule_local_label_free_only
+stage_a:
+  semantic_families: [morgan_bit, morgan_count, rdkit_path, maccs]
+  select_exactly_one_per_semantic_family: true
+  estimator: extra_trees
+  n_estimators: 800
+  min_samples_leaf: 2
+  max_features: sqrt
+  class_weight: balanced
+  objective_sd_penalty: 0.25
+  tie_break: smaller_fingerprint
+weighting:
+  methods: [extra_trees_permutation, xgboost_gain]
+  grouped_subcv_folds: 3
+  permutation_repeats: 5
+  importance_estimator_n_jobs: 1
+  permutation_n_jobs: 16
+  aggregate: median
+  negative_importance_policy: clip_zero
+  epsilon: 1.0e-8
+  alpha: [0.0, 0.25, 0.5, 1.0]
+  weight_clip: [0.25, 4.0]
+  normalize_mean_per_block: true
+  stability_min_median_spearman: 0.40
+  stability_fallback_alpha: 0.0
+  fit_scope: active_training_partition_only
+embedding:
+  methods: [linear_svd, nystroem_weighted_rbf]
+  linear_svd_components: [16, 32, 64, 96, 128]
+  nystroem_components: [16, 32, 64, 96]
+  gamma_multiplier: [0.25, 0.5, 1.0, 2.0, 4.0]
+  landmarks: active_training_partition_only
+  descriptors_appended_after_embedding: true
+models:
+  downstream: [extra_trees, xgboost]
+  optional_downstream: [tabm_mini]
+  extra_trees:
+    n_estimators: 1000
+    min_samples_leaf: [1, 2, 3, 5]
+    max_features: [sqrt, 0.25, 0.5, 1.0]
+    class_weight: [balanced, balanced_subsample]
+  xgboost:
+    n_estimators: [200, 400, 800]
+    max_depth: [1, 2, 3]
+    learning_rate: [0.01, 0.03, 0.05]
+    min_child_weight: [2, 5, 10]
+    subsample: [0.7, 0.9, 1.0]
+    colsample_bytree: [0.5, 0.8, 1.0]
+    reg_alpha: [0.0, 0.5, 2.0]
+    reg_lambda: [2.0, 10.0, 30.0]
+  tabm_mini:
+    enabled: false
+    k: [8, 16]
+    n_blocks: [1, 2, 3]
+    d_block: [64, 128, 256]
+    dropout: [0.1, 0.2, 0.3]
+search:
+  strategy: deterministic_hierarchical
+  max_stage_c_candidates_per_active_fit: 40
+  outer_test_metric_consulted: false
+  hagr_metric_consulted: false
+required_ablations:
+  - seven_descriptor_baseline
+  - rdkit2d_multifingerprint_extra_trees
+  - raw_best_individual_fingerprint
+  - raw_unweighted_concatenation
+  - selected_lengths_unweighted
+  - weighted_no_reduction
+  - weighted_svd
+  - weighted_nystroem
+  - final_v5

@@ -1,0 +1,30 @@
+# Generated data, fitted models, and run outputs
+artifacts/
+outputs/
+external_data/
+external_sources/
+checkpoints/
+resource_telemetry/
+tools/
+third_party/
+
+# Python environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Local logs and editor files
+*.log
+*.out
+*.swp
+.DS_Store
+.idea/
+.vscode/

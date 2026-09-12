@@ -1,0 +1,127 @@
+schema_version: geroprotector.blend_xai_v3.protocol.v1
+scientific_role: >-
+  post_lock_descriptive_explainability_for_the_equal_thirds_svm_tanimoto_tabfm
+  blend, run side by side with the equal_thirds_svm_tanimoto_tabpfnv2 blend so
+  the two can be compared on insight quality under identical weights.
+
+# Same analysis suite (sections A-J) as blend_xai_v2, which explained the
+# 0.10/0.60/0.30 TabPFN-v2 blend.  Two changes:
+#   1. both explained blends are EQUAL THIRDS, so the TabFM-vs-TabPFN comparison
+#      is not confounded by the weight vector;
+#   2. a new section K scores the two blends head to head on prespecified
+#      insight-quality criteria.
+# Every correction made in v2 is retained: three-level decomposition, libsvm
+# Platt form 1/(1+exp(A*f+B)), subsample-without-replacement stability with
+# non-convergence as a hard error, prevalence-adjusted applicability domain.
+
+analysis_contract:
+  locked_model_is_refit_or_reweighted: false
+  threshold_is_changed: false
+  test_or_external_labels_used_to_build_explanations: false
+  all_results_are_post_lock_descriptive: true
+  bootstrap_refits_are_training_only_diagnostics: true
+  thresholds_derived_from: full_324_d1_train_cross_fitted_oof_mcc
+
+blends:
+  eqthirds_tabfm:
+    components: [paper_svm, tanimoto_svc, tabfm]
+    weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+    slot3_family: foundation_tabular_google_research_tabfm_1.0.1
+    slot3_applies_platt: false
+    expected_train_oof_mcc_threshold: 0.5263794471128225
+  eqthirds_tabpfnv2:
+    components: [paper_svm, tanimoto_svc, tabpfn_v2]
+    weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+    slot3_family: foundation_tabular_prior_labs_tabpfn_v2
+    slot3_applies_platt: false
+    expected_train_oof_mcc_threshold: null   # derived on train OOF, no sealed value
+
+decomposition_scale:
+  component_level_raw_blend: exact_100pct_of_weight
+  within_component_margin: exact_margin_space_only_two_thirds_of_weight
+  final_probability: not_additively_attributable_platt_and_expit_sigmoid
+  note: >-
+    Under equal thirds the analytically decomposable share rises from 0.70
+    (0.10 svm + 0.60 tanimoto) to 0.6667 (1/3 svm + 1/3 tanimoto) -- LOWER, not
+    higher, because the Tanimoto slot lost weight.  Stated explicitly so the
+    change is not mistaken for an improvement.
+
+applicability:
+  similarity: morgan_radius2_2048bit_tanimoto_to_locked_d1_train
+  tanimoto_cutoffs: [0.30, 0.40, 0.50, 0.60]
+  report_prevalence_adjusted_ap: true
+  report_bootstrap_ci: true
+  coverage_performance_curve: true
+
+chemical_classes:
+  prespecified_before_inspecting_class_results: true
+  inherited_verbatim_from: blend_xai_v2
+  aliphatic_hydroxyl_smarts: "[CX4][OX2H]"
+  aromatic_hydroxyl_smarts: "[c][OX2H]"
+  carboxylic_acid_smarts: "[CX3](=O)[OX2H1]"
+  polyol_sugar_like_min_aliphatic_oh: 3
+  polyphenol_like_min_aromatic_oh: 2
+  role: post_hoc_error_analysis_not_candidate_discovery
+
+stability:
+  coefficient_subsamples: 200
+  subsample_fraction: 0.8
+  method: subsample_without_replacement
+  nonconverged_refits_are_a_hard_error: true
+
+insight_comparison:
+  prespecified_criteria:
+    - discrimination_ap_and_auroc_with_paired_bootstrap
+    - calibration_ece_slope_brier
+    - error_detection_auroc_from_component_disagreement
+    - component_redundancy_pearson_and_unique_ablation_contribution
+    - applicability_domain_signal_inside_minus_outside
+    - chemical_class_bias_magnitude
+    - analytic_attribution_coverage_of_blend_weight
+  note: >-
+    Criteria and their direction of preference were fixed before any v3 result
+    was produced.  "Better insight" is scored on these criteria only.
+
+bootstrap_resamples: 2000
+seed: 20260821
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+sealed_inputs:
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  tabfm_train_oof:
+    path: outputs/screeningblend_tabfm_20260821/d1_train_oof_predictions.csv
+    sha256: b65ab9e8ecf45e7965afad1f0214c73734ffb0b20b379b644bb2ed6a982d2121
+  tabfm_test:
+    path: outputs/screeningblend_tabfm_20260821/d1_test_predictions.csv
+    sha256: 26bde3f7ad3a8f63b3ce9ae8fe2f8688e8cbc9ada299b008d6bd06c609a0facd
+  tabfm_drugage:
+    path: outputs/screeningblend_tabfm_20260821/external_predictions_drugage.csv
+    sha256: d8cfd6520737ee31b318d988b51ff1d69e0716589c38e4bc7b4a25e60f6a07a6
+  tabfm_agextend:
+    path: outputs/screeningblend_tabfm_20260821/external_predictions_agextend.csv
+    sha256: 1a802c26a203d85e1b7e4ee1b3ab4ca0b9788eaaf99e82d6df9572d58d4158a5
+  tabfm_thresholds:
+    path: outputs/screeningblend_tabfm_20260821/component_thresholds.csv
+    sha256: ed763eb8ae8ddc418f0e0e50659a42b52c85b17cbbb3c09d0fa3d9cce15d0102
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

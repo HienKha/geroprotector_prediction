@@ -1,0 +1,186 @@
+schema_version: geroprotector.tabpfn3_paper405.protocol.v1
+scientific_role: >-
+  fold_safe_nested_selection_and_evaluation_of_tabpfn_v3_in_the_tabular_foundation_slot
+  of_the_locked_paper405_screening_protocol
+
+# ---------------------------------------------------------------------------
+# Model identity.  This is the piece the sealed 2026-08-17/18 runs never used:
+# they pinned tabpfn ModelVersion.V2 with tabpfn-v2-classifier.ckpt.
+# ---------------------------------------------------------------------------
+model:
+  package: tabpfn
+  # The installed interpreter currently reports 8.0.8; configs/v6.yaml asks for
+  # 8.1.0.  Set this to whatever `scripts/check_tabpfn3_env.sh` prints and the run
+  # will hard-fail if the interpreter ever drifts.
+  required_package_version: 8.0.8
+  explicit_model_version: V3
+  huggingface_repo_id: Prior-Labs/tabpfn_3
+  checkpoint_filename: tabpfn-v3-classifier-v3_default.ckpt
+  # Filled in once by scripts/stage_tabpfn3_checkpoint.sh, which prints both values.
+  checkpoint_path: checkpoints/tabpfn-v3-classifier-v3_default.ckpt
+  checkpoint_sha256: d0d865d54dfbc524f5703104be90620182dca7e5fb2c16de72e9959ea18f3988
+  checkpoint_source: huggingface://Prior-Labs/tabpfn_3/tabpfn-v3-classifier-v3_default.ckpt
+  access_date_utc: "2026-08-19"
+  device: cuda
+  softmax_temperature: 0.9
+  telemetry_disabled: true
+
+# ---------------------------------------------------------------------------
+# Locked validation protocol.  Identical to the sealed runs; nothing is re-derived.
+# ---------------------------------------------------------------------------
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+cross_fitting:
+  outer_folds: 5
+  outer_seed: 42          # the exact folds the sealed OOF streams used
+  inner_folds: 5
+  inner_seed: 142
+  selection_metric: auprc_average_precision_positive
+  selection_scope: outer_fit_rows_only
+  final_selection_scope: all_324_paper_training_rows
+  outer_validation_rows_used_for_selection: false
+  test_or_external_labels_used_for_selection: false
+
+# ---------------------------------------------------------------------------
+# Prespecified candidate grid.  Small on purpose: 324 training rows cannot support
+# a wide search, and every extra candidate inflates inner-selection variance.
+# ---------------------------------------------------------------------------
+candidates:
+  panels:
+    - rdkit2d
+    - rdkit2d_morgan_svd64
+  n_estimators: [4, 8, 16]
+  tie_break: [higher_selection_metric, fewer_n_estimators, panel_declaration_order]
+
+panels:
+  rdkit2d:
+    description: the exact panel the sealed TabPFN v2 slot used
+    fold_local: [drop_all_nonfinite, median_imputation, drop_constant]
+  rdkit2d_morgan_svd64:
+    description: same descriptors plus a fit-set-only truncated SVD of Morgan r2/2048
+    fold_local: [drop_all_nonfinite, median_imputation, drop_constant]
+    morgan_radius: 2
+    morgan_bits: 2048
+    svd_components: 64
+    svd_random_state: 42
+    svd_fitted_on_fit_rows_only: true
+
+inference:
+  scored_outputs_mode: canonical_isolated_singleton
+  inner_selection_mode: batched
+  repeat_sentinels: 3
+  repeat_atol: 1.0e-6
+  row_order_audit: true
+
+# ---------------------------------------------------------------------------
+# Blends.  Both weight vectors are copied from existing sealed experiments; no new
+# weight is fitted here.  Only the third component changes.
+# ---------------------------------------------------------------------------
+blends:
+  locked_weights_010_060_030:
+    components: [paper_svm, tanimoto_svc, tabpfn3]
+    weights: [0.10, 0.60, 0.30]
+    weight_source: sealed_screeningblend405_20260817_lock
+  equal_thirds:
+    components: [paper_svm, tanimoto_svc, tabpfn3]
+    weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+    weight_source: sealed_fixedblend405_20260817_equal_weight_anchor
+  weights_selected_from_data_in_this_run: false
+
+thresholds:
+  primary_source: full_324_d1_train_cross_fitted_oof_mcc
+  secondary_fixed: 0.5
+  external_labels_may_select_or_change_threshold: false
+
+endpoints:
+  d1_paper_test: paper_binary
+  drugage: significant_positive_retrieval_background_not_certified_negative
+  agextend: published_independent_table6_binary
+
+# ---------------------------------------------------------------------------
+# Read-only sealed inputs.  The run aborts if a single byte differs.
+# ---------------------------------------------------------------------------
+sealed_inputs:
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  screening_model_lock:
+    path: outputs/screeningblend405_20260817/models/MODEL_LOCK.json
+    sha256: 1dad2fc8a8bfbab2a4c9c10070cd3b0d9b09f34d4c245914ff573f1ac9433a1a
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  ablation_d1_metrics:
+    path: outputs/screeningblend_ablation_papersvm_20260818/d1_component_metrics.csv
+    sha256: b027b9f9e97db6197beb6cf93f36d195935e43a4129dbe54943719de9e86dbff
+  ablation_external_metrics:
+    path: outputs/screeningblend_ablation_papersvm_20260818/external_component_metrics.csv
+    sha256: 92fb7942f8a495c9435a3dace6aafbc0540e80706442b9cca21deb909902174e
+
+parity_contract:
+  rebuilt_paper_svm_and_tanimoto_streams_must_match_sealed_run: true
+  parity_atol: 1.0e-12
+  rebuilt_rdkit2d_context_must_equal_sealed_tabpfn_context: true
+  rebuilt_morgan_bits_must_equal_sealed_tanimoto_train_bits: true
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true
+
+# ---------------------------------------------------------------------------
+# Output schema (also emitted verbatim into RUN_MANIFEST.json).
+# ---------------------------------------------------------------------------
+output_schema:
+  selection_outer_folds.csv:
+    columns: [outer_fold, candidate_id, panel, n_estimators, inner_ap_mean,
+              inner_ap_std, inner_auroc_mean, selected, n_inner_fit_rows]
+  selection_final.csv:
+    columns: [candidate_id, panel, n_estimators, inner_ap_mean, inner_ap_std,
+              inner_auroc_mean, selected, n_inner_fit_rows]
+  d1_train_oof_predictions.csv:
+    columns: [paper_row_index, label, outer_fold, selected_candidate_id,
+              probability_paper_svm, probability_tanimoto_svc, probability_tabpfn3,
+              blend_010_060_030_tabpfn3, blend_equal_thirds_tabpfn3]
+  component_thresholds.csv:
+    columns: [model, threshold, threshold_source, oof_mcc_at_selection,
+              external_labels_used]
+  d1_test_predictions.csv:
+    columns: [paper_row_index, label, probability_paper_svm, probability_tanimoto_svc,
+              probability_tabpfn3, blend_010_060_030_tabpfn3,
+              blend_equal_thirds_tabpfn3, maximum_tanimoto_to_fitted_train]
+  external_predictions_<cohort>.csv:
+    columns: sealed_scored_columns_plus [probability_tabpfn3,
+              blend_010_060_030_tabpfn3, blend_equal_thirds_tabpfn3]
+  metrics_all.csv:
+    columns: [cohort, endpoint, model, operating_point, result_source, n_test,
+              positive_prevalence, class_complete, auprc_average_precision_positive,
+              auroc, brier, log_loss, accuracy, balanced_accuracy, mcc, macro_f1,
+              recall_sensitivity, specificity, precision_positive, npv, cohen_kappa,
+              threshold, tn, fp, fn, tp]
+  comparison_vs_locked.csv:
+    columns: [cohort, endpoint, model, result_source, n_test,
+              auprc_average_precision_positive, auroc, brier, mcc, macro_f1,
+              recall_sensitivity, specificity, threshold]
+  inference_audit.json:
+    keys: [mode, repeat_sentinels, repeat_max_abs_difference, checkpoint_sha256,
+           package_version, model_version, telemetry_disabled]

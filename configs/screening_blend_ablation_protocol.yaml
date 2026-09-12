@@ -1,0 +1,48 @@
+schema_version: geroprotector.screening_blend_ablation.protocol.v1
+scientific_role: post_lock_component_ablation_and_applicability_analysis
+
+locked_model:
+  components: [paper_svm, tanimoto_svc, tabpfn_v2]
+  blend_weights: [0.10, 0.60, 0.30]
+  component_state_sha256: a5f65756c180b3338bf9a647fdea35b97a954662137a320bbea3606d4d04ba1e
+  blend_oof_mcc_threshold: 0.5299579802368826
+  fixed_threshold: 0.5
+
+sealed_inputs:
+  weighted_completed:
+    path: outputs/weightedblend405_20260817/COMPLETED.json
+    sha256: f3daabf59f937ddae9e3f470eced0ae80f0baaa66972ac66cb7d88e8123b468c
+  screening_completed:
+    path: outputs/screeningblend405_20260817/COMPLETED.json
+    sha256: 7477cc4569b4143c5355483dfe7812cdf530dbd082cdd9e98bd15f9faa66891a
+  external_completed:
+    path: outputs/screeningblend_external_20260817/COMPLETED.json
+    sha256: e25c04e075a25f73091dc34e48441e72f107e9c45e8aad7e30b5e530cf59a6a8
+  external_protocol:
+    path: configs/screening_blend_external_protocol.yaml
+    sha256: 35ee662d3e2ee0c012c7df700c1993993724e54e7ebbb5c93729f43c8eb7d2f7
+
+threshold_analysis:
+  primary_ranking_metrics: [auprc_average_precision_positive, auroc, brier]
+  component_binary_threshold_source: full_324_d1_train_cross_fitted_oof_mcc
+  common_fixed_0p5_sensitivity: true
+  external_labels_may_select_or_change_threshold: false
+
+applicability:
+  similarity: morgan_radius2_2048bit_tanimoto_to_locked_d1_train
+  threshold: 0.40
+  outside_rule: maximum_tanimoto_lt_0p40
+  threshold_selected_without_test_or_external_labels: true
+  use_as_exclusion_filter: false
+  evaluate_cohorts: [d1_paper_test, drugage, agextend]
+
+paired_bootstrap:
+  resamples: 10000
+  seed: 20260818
+  confidence_level: 0.95
+  primary_drugage_endpoint: significant_positive_retrieval_background_not_certified_negative
+  sampling_schemes:
+    - stratified_parent_connectivity_compound
+    - publication_compound_union_cluster_sensitivity
+  age_extend_formal_inference_allowed: false
+  external_results_may_change_locked_model: false

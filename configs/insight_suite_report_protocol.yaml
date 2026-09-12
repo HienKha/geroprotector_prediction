@@ -1,0 +1,56 @@
+schema_version: geroprotector.insight_suite_report.protocol.v1
+protocol_status: declared_before_first_integrated_report_run
+scientific_role: exact_stamped_read_only_adjudication_of_A_through_E
+experiments:
+  modelwide_druglikeness_bias:
+    manifest_schema: geroprotector.modelwide_druglikeness_bias.run_manifest.v1
+    allowed_completion_statuses: [COMPLETE]
+    required_files: [RUN_MANIFEST.json, model_cohort_predictions.csv, modelwide_bias_summary.csv, positive_only_qed_associations.csv, qed_logistic_models.csv, qed_adjusted_models.csv, qed_trend_tests.csv, simple_baseline_metrics.csv, label_permutation_controls.csv]
+  repeated_rank_stability:
+    manifest_schema: geroprotector.repeated_rank_stability.run_manifest.v1
+    allowed_completion_statuses: [COMPLETE]
+    required_files: [RUN_MANIFEST.json, per_repeat_pooled_metrics.csv, per_fold_metrics.csv, rank_distribution.csv, rank_correlation_across_repeats.csv, compound_cluster_bootstrap_differences.csv, seed42_parity_checks.csv]
+  chemical_space_cv:
+    manifest_schema: geroprotector.chemical_space_cv.run_manifest.v1
+    allowed_completion_statuses: [COMPLETE, COMPLETE_C2_BLOCKED]
+    required_files: [RUN_MANIFEST.json, pooled_grouped_metrics.csv, per_fold_grouped_metrics.csv, random_vs_grouped_deltas.csv, group_feasibility_audit.json, applicability_by_registry.csv]
+  agextend_endpoint_benchmark:
+    manifest_schema: geroprotector.agextend_endpoint_benchmark.run_manifest.v1
+    allowed_completion_statuses: [COMPLETE, COMPLETE_REFERENCE_REPRODUCTION_BLOCKED,
+                                  COMPLETE_EXACT_REFIT_BLOCKED_PARTIAL]
+    required_files: [RUN_MANIFEST.json, SOURCE_RESOLUTION.json, fixed_panel_oof_predictions.csv, fixed_panel_pooled_metrics.csv, fixed_panel_fold_metrics.csv, d1_nonoverlap_sensitivity_metrics.csv, challenge_metrics.csv, agextend_qed_bias.csv, agextend_qed_logistic_models.csv, agextend_qed_adjusted_models.csv, agextend_qed_trend_tests.csv, agextend_simple_baseline_metrics.csv]
+  drugage_celegans_benchmark:
+    manifest_schema: geroprotector.drugage_celegans_benchmark.run_manifest.v1
+    allowed_completion_statuses: [COMPLETE, COMPLETE_TRACK_E1_BLOCKED,
+                                  COMPLETE_TRACK_E1_BLOCKED_PARTIAL,
+                                  COMPLETE_TRACK_E1_BLOCKED_PARTIAL_PUBLICATION_GROUPED_INFEASIBLE]
+    required_files: [RUN_MANIFEST.json, SOURCE_RESOLUTION.json, fixed_panel_oof_predictions.csv, fixed_panel_pooled_metrics.csv, fixed_panel_fold_metrics.csv, endpoint_sensitivity_metrics.csv, repeated5x5_metrics.csv, publication_group_feasibility.json, publication_grouped_metrics.csv, drugage_qed_bias.csv, drugage_qed_logistic_models.csv, drugage_qed_adjusted_models.csv, drugage_qed_trend_tests.csv, drugage_simple_baseline_metrics.csv]
+evidence_columns: [claim_id, claim_text, primary_evidence, replication_evidence, contradictory_evidence, cohorts, models, effect_size, confidence_interval, multiplicity_status, limitations, allowed_wording, prohibited_wording, verdict]
+metrics: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1, brier, cohen_kappa, recall_sensitivity, specificity]
+primary_metrics: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1, brier, cohen_kappa]
+ranking_decision:
+  metrics: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1, brier, cohen_kappa]
+  min_repeat_top_change_fraction: 0.30
+  min_metrics_with_repeat_swapping: 4
+  random_registry: random_seed42
+  min_grouped_top_change_fraction: 0.25
+bias_decision:
+  holm_alpha: 0.05
+  min_distinct_families: 3
+  d1_primary_cohort: d1_train_oof
+  endpoint_primary_cohorts: {agextend: agextend_oof, drugage_celegans: drugage_celegans_oof}
+  family_representatives: {descriptor_svm: paper_svm, similarity_kernel: tanimoto_svc, tabular_foundation_v2: tabpfn_v2, tabular_foundation_fm: tabfm, gradient_boosting: catboost_full, neural_tabular: tabm_full}
+grouped_decision:
+  practical_delta: {auprc_average_precision_positive: 0.03, auroc: 0.03, accuracy: 0.03, mcc: 0.05, macro_f1: 0.03, brier: 0.02, cohen_kappa: 0.05}
+  min_material_fraction: 0.25
+endpoint_transport_decision:
+  require_auroc_above_chance: true
+  require_auprc_above_endpoint_prevalence: true
+  arbitrary_absolute_auprc_cutoff: null
+  require_prespecified_sensitivity_directional_replication: true
+title_decision:
+  endpoint_replication_required: true
+  retrospective_d1_model_stress_test_counts_as_endpoint_replication: false
+  d1_multi_family_requirement: at_least_three_prespecified_families_with_negative_ci_and_holm_q
+  endpoint_replication_requirement: same_rule_in_at_least_one_of_D_or_E
+immutability: {exact_stamp_only: true, latest_fallback: false, partial_report_allowed: false, manuscript_edited: false, destination_must_not_exist: true}

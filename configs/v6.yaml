@@ -1,0 +1,134 @@
+pipeline: V6_TABULAR_FOUNDATION_MODELS
+extends: [data.yaml, validation.yaml]
+protocol_resolution: zero_shot_first_optional_adaptation_separate_locked_phase
+checkpoint_ledger: artifacts/checkpoints/v6/checkpoint_ledger.json
+execution:
+  device: cuda
+  implicit_network_access: false
+models:
+  tabpfn3:
+    enabled: true
+    package: tabpfn
+    package_version: 8.1.0
+    explicit_model_version: V3
+    checkpoint_path: REQUIRED_AT_RUNTIME
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    license_path: REQUIRED_AT_RUNTIME
+    license_sha256: REQUIRED_AT_RUNTIME
+    checkpoint_source: REQUIRED_AT_RUNTIME
+    access_date_utc: REQUIRED_AT_RUNTIME
+  tabpfn26:
+    enabled: true
+    package: tabpfn
+    package_version: 8.1.0
+    explicit_model_version: V2_6
+    checkpoint_path: REQUIRED_AT_RUNTIME
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    license_path: REQUIRED_AT_RUNTIME
+    license_sha256: REQUIRED_AT_RUNTIME
+    checkpoint_source: REQUIRED_AT_RUNTIME
+    access_date_utc: REQUIRED_AT_RUNTIME
+  tabiclv2:
+    enabled: true
+    package: tabicl
+    package_version: 2.1.1
+    explicit_model_version: v2
+    checkpoint_path: REQUIRED_AT_RUNTIME
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    license_path: REQUIRED_AT_RUNTIME
+    license_sha256: REQUIRED_AT_RUNTIME
+    checkpoint_source: REQUIRED_AT_RUNTIME
+    access_date_utc: REQUIRED_AT_RUNTIME
+  tabiclv1:
+    enabled: true
+    package: tabicl
+    package_version: 2.1.1
+    explicit_model_version: v1
+    checkpoint_path: REQUIRED_AT_RUNTIME
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    license_path: REQUIRED_AT_RUNTIME
+    license_sha256: REQUIRED_AT_RUNTIME
+    checkpoint_source: REQUIRED_AT_RUNTIME
+    access_date_utc: REQUIRED_AT_RUNTIME
+  optional_tabdpt:
+    enabled: false
+    checkpoint_path: REQUIRED_IF_ENABLED
+    checkpoint_sha256: REQUIRED_IF_ENABLED
+input_panels:
+  rdkit2d_217:
+    enabled: true
+    role: primary_candidate
+    fold_local: [drop_all_nonfinite, median_imputation, drop_constant]
+  chemistry_32:
+    enabled: true
+    role: primary_candidate
+    fold_local: [drop_all_nonfinite, median_imputation, drop_constant]
+  morgan_svd_plus_descriptors:
+    enabled: true
+    role: primary_candidate
+    morgan_radius: 2
+    morgan_bits: 2048
+    svd_components: [32, 64, 128, 256]
+    append_maccs: false
+    append_chemistry_32: true
+  v5_locked:
+    enabled: false
+    role: optional_after_v5_internal_lock
+    selection_by_v5_outer_scores_forbidden: true
+  frozen_embedding_plus_descriptors:
+    enabled: false
+    role: exploratory_v8_bridge
+inference:
+  ensemble_sizes: [4, 8, 16]
+  ablation_ensemble_sizes: [1, 4, 16]
+  controlled_ablation_anchor:
+    model_id: tabpfn3
+    panel_family: chemistry_32
+    ensemble_size: 4
+  preprocessing_mode: training_median_drop_constant
+  canonical_mode: one_query_per_call
+  batch_composition_audit: true
+  row_order_audit: true
+  feature_order_audit: true
+  repeated_call_audit: true
+  random_batch_compositions_per_query: 10
+  hard_fail_on_context_row_order: true
+  hard_fail_on_feature_order: false
+  audit_atol: 1.0e-6
+  telemetry_disabled: true
+adaptation:
+  execution_phase: zero_shot_only
+  beta_style_encoder:
+    implemented_as_separate_secondary_phase: true
+    enabled: false
+    dims: [64, 128, 256]
+    bags: [1, 4, 8]
+  context_only_ttt:
+    implemented_as_separate_secondary_phase: true
+    enabled: false
+    steps: [0, 1, 3, 5, 10]
+    learning_rate: [1.0e-6, 3.0e-6, 1.0e-5]
+    outer_test_features_used_for_updates: false
+  full_finetuning:
+    enabled: false
+search:
+  max_candidates_per_active_fit: 30
+  primary_metric: ap_positive
+  outer_test_metric_consulted: false
+  hagr_metric_consulted: false
+required_baselines: [elastic_net, extra_trees, xgboost]
+optional_baselines: [tabm]
+baseline_search:
+  max_candidates_per_active_fit: 18
+  elastic_net:
+    C: [0.1, 1.0, 10.0]
+    l1_ratio: [0.0, 0.5]
+  extra_trees:
+    n_estimators: 1000
+    min_samples_leaf: [1, 2, 5]
+    max_features: [sqrt, 0.5]
+  xgboost:
+    locked_candidates:
+      - {n_estimators: 400, max_depth: 2, learning_rate: 0.03, min_child_weight: 2, reg_alpha: 0.5, reg_lambda: 10.0}
+      - {n_estimators: 800, max_depth: 1, learning_rate: 0.03, min_child_weight: 5, reg_alpha: 0.0, reg_lambda: 10.0}
+      - {n_estimators: 400, max_depth: 3, learning_rate: 0.05, min_child_weight: 5, reg_alpha: 2.0, reg_lambda: 30.0}

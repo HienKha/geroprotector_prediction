@@ -1,0 +1,80 @@
+project:
+  name: geroprotector_v5_v16
+  timezone: Asia/Ho_Chi_Minh
+  random_seed: 20260408
+
+upstream:
+  repository: BioAgeLab/Geroprotectors-Project-INGER
+  commit: c8f458925f5ea2beeba87c7c2dda62eefacf618c
+  reported_positive_path: 0.Data/Geroprotectors_Clean_Descriptors_2024.csv
+  weak_reference_path: 0.Data/No_geroprotectors_and_Toxicos.csv
+  prior_candidate_path: 5.Chemical space/Geroprotectors by ML.csv
+  verify_sha256: true
+  sources:
+    prior_ml_unlabeled:
+      cache_name: geroprotectors_by_ml.csv
+      sha256: 9bce3bdfc296bf777901232349f690ca5453a36f904235ae8fb0e7d5db58df4d
+      rows: 1488
+      unique_smiles: 1488
+      delimiter: comma
+      encoding: latin-1
+      name_column: Name
+      smiles_column: smiles
+    reported_positive:
+      cache_name: geroprotectors_reported.tsv
+      sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+      rows: 206
+      unique_smiles: 205
+      delimiter: tab
+      encoding: latin-1
+      name_column: Compound Name
+      smiles_column: Smiles
+    weak_chembl_reference:
+      cache_name: no_geroprotectors_and_toxicos.csv
+      sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+      rows: 199
+      unique_smiles: 198
+      delimiter: comma
+      encoding: latin-1
+      name_column: compound_name
+      smiles_column: canonical_smiles
+
+roles:
+  reported_positive: supervised_positive
+  weak_chembl_reference: weak_negative_or_unlabeled
+  prior_ml_candidates: unlabeled_only
+  hagr_drugage: historical_external_stress_test_only
+
+curation:
+  rdkit_version_pin: 2025.03.6
+  parent_policy: largest_organic_fragment_versioned
+  normalize_functional_groups: true
+  reionize: true
+  tautomer_canonicalization: diagnostic_only
+  identity_key: connectivity_inchikey
+  preserve_stereochemistry: true
+  duplicate_policy: collapse_consistent
+  conflict_policy: exclude_entire_identity_group
+  expected_counts:
+    total: 382
+    positive: 202
+    weak_reference: 180
+  expected_identity_label_sha256: 06cccf0cfc87e56bc98bb989654e1dc75708c40c3816abb7351048bce3685eed
+  fail_on_count_mismatch: true
+  raw_universe: direct_pinned_upstream_1893_rows
+  curation_overrides: configs/d1_smiles_curation.csv
+  curation_overrides_sha256: 53766a337b16c03d2dd7c51af0b78533155943359c296f736d29111e046839c0
+  metal_adjudication: configs/d1_metal_adjudication.csv
+  metal_adjudication_sha256: 08b0e90a4976dae3a2eb8987530926a186a8b62b55b4cee237b8881a9bfda1dc
+  source_attribution_precedes_standardization: true
+  expected_prior_overlap_connectivity:
+    - HAPOVYFOVVWLRS
+    - PVNIIMVLHYAWGP
+
+outputs:
+  raw_dir: artifacts/data/raw/upstream
+  curated_table: artifacts/data/curated/compounds.parquet
+  provenance_table: artifacts/data/curated/provenance.parquet
+  identity_conflicts: artifacts/data/curated/identity_conflicts.csv
+  standardization_ledger: artifacts/data/curated/standardization_ledger.parquet
+  manifest: artifacts/data/curated/data_manifest.json

@@ -1,0 +1,153 @@
+schema_version: geroprotector.blend_svm_tani_tabpfnv2_optuna.protocol.v1
+scientific_role: >-
+  fold_safe_nested_optuna_search_over_tabpfnv2_hyperparameters_and_optionally_tanimoto_C
+  inside_the_equal_thirds_svm_tanimoto_tabpfnv2_blend
+
+# paper_svm is NEVER part of the search space: it is contractually the published
+# paper's exact linear SVC (C=1, gamma=1) and tuning it would break the entire
+# reason it is in this project.  Only TabPFNv2's own hyperparameters, and (in
+# `blend` mode only) Tanimoto-SVC's C, are searched.
+#
+# Optuna maximizes AP+ (average_precision_score), a threshold-free ranking metric --
+# matching every other run in this repository (`primary_metric: ap_positive` in
+# configs/v6.yaml).  Threshold selection (fixed 0.5 and OOF-MCC) happens AFTER the
+# configuration is locked, exactly as in every sealed run; it is never inside the
+# Optuna objective.
+
+optuna:
+  # Resolved once by scripts/check_optuna_env.sh, then pasted here.  The run hard
+  # fails if the interpreter drifts from whatever version you resolved.
+  required_optuna_version: 4.9.0
+  sampler: TPESampler
+  pruner: none
+  direction: maximize
+  selection_metric: auprc_average_precision_positive
+
+search_budget:
+  n_trials_outer_fold: 20
+  n_trials_final: 30
+  # A faster first pass: n_trials_outer_fold=10, n_trials_final=15 roughly halves
+  # wall-clock time.  Given n=324 training rows, budgets much above the defaults
+  # mostly fit cross-validation noise rather than real signal.
+
+search_space:
+  tabpfn_n_estimators: [4, 8, 16, 32]
+  tabpfn_softmax_temperature_range: [0.5, 1.5]      # TabPFN v2 default is 0.9
+  tabpfn_panel: [rdkit2d, rdkit2d_morgan_svd64]
+  # Only used when --objective blend.
+  tanimoto_C_range: [0.05, 20.0]                    # log-uniform; current default is 1.0
+  tanimoto_C_default_for_standalone_mode: 1.0
+
+model:
+  package: tabpfn
+  required_package_version: 8.0.8
+  explicit_model_version: V2
+  checkpoint_path: checkpoints/tabpfn-v2-classifier.ckpt
+  checkpoint_sha256: f65a35685aeef42e31b796d9bfa34e68d6fc780bc98e7bff7763802964cf435f
+  device: cuda
+  telemetry_disabled: true
+
+cross_fitting:
+  outer_folds: 5
+  outer_seed: 42            # the exact folds every sealed OOF stream in this repo uses
+  inner_folds: 5
+  inner_seed: 142
+  outer_validation_rows_used_for_trial_objective: false
+  test_or_external_labels_used_for_search_or_threshold: false
+
+panels:
+  rdkit2d:
+    fold_local: [drop_all_nonfinite, median_imputation, drop_constant]
+  rdkit2d_morgan_svd64:
+    fold_local: [drop_all_nonfinite, median_imputation, drop_constant]
+    morgan_radius: 2
+    morgan_bits: 2048
+    svd_components: 64
+    svd_random_state: 42
+    svd_fitted_on_fit_rows_only: true
+
+paper_svm_contract:
+  frozen: true
+  kernel: linear
+  C: 1.0
+  gamma: 1.0
+  probability: true
+  random_state: 42
+  never_included_in_search_space: true
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+thresholds:
+  fixed_0p5: 0.5
+  oof_mcc_source: this_experiments_own_5fold_outer_oof
+  external_labels_may_select_or_change_threshold: false
+
+endpoints:
+  d1_paper_test: paper_binary
+  drugage: significant_positive_retrieval_background_not_certified_negative
+  agextend: published_independent_table6_binary
+
+sealed_inputs:
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  untuned_comparison:
+    path: outputs/blend_comparison_svm_tani_v2_bishop_20260819/comparison_metrics.csv
+    sha256: 6a556f2d400d4055342503372acb35af302af7775076639ceef647f24f9c87c7
+
+parity_contract:
+  # Tanimoto and TabPFN are intentionally searched, so their fitted output need not
+  # match the sealed 0.10/0.60/0.30 run.  Only the frozen paper_svm stream, and the
+  # raw feature panel itself, are required to match exactly.
+  rebuilt_paper_svm_test_and_external_probabilities_are_read_from_sealed_files: true
+  rebuilt_morgan_bits_must_equal_sealed_tanimoto_train_bits: true
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true
+
+output_schema:
+  optuna_trials_outer_fold_<i>.csv: {columns: [number, value, params_*, state]}
+  optuna_trials_final.csv: {columns: [number, value, params_*, state]}
+  selected_config.json:
+    keys: [objective_mode, outer_fold_winners, final_winner]
+  d1_train_oof_predictions.csv:
+    columns: [paper_row_index, label, outer_fold, probability_tabpfn_v2_tuned,
+              probability_tanimoto_svc_tuned, blend_equal_thirds_tuned]
+  component_thresholds.csv:
+    columns: [model, threshold, threshold_source, oof_mcc_at_selection]
+  d1_test_predictions.csv:
+    columns_added_beyond_sealed: [probability_tabpfn_v2_tuned, blend_equal_thirds_tuned]
+  external_predictions_<cohort>.csv:
+    columns_added_beyond_sealed: [probability_tabpfn_v2_tuned, blend_equal_thirds_tuned]
+  metrics_all.csv:
+    columns: [cohort, endpoint, model, operating_point, n_test,
+              auprc_average_precision_positive, auroc, brier, mcc, macro_f1,
+              recall_sensitivity, specificity, threshold]
+  comparison_metrics_tuned_vs_untuned.csv:
+    columns: [cohort, endpoint, model, threshold_rule, threshold, result_source,
+              auprc_average_precision_positive, auroc, brier, mcc, macro_f1,
+              recall_sensitivity, specificity]

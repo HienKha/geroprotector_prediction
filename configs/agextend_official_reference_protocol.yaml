@@ -1,0 +1,62 @@
+schema_version: geroprotector.agextend_official_reference.protocol.v1
+protocol_status: added_after_official_source_audit_before_parity_execution
+scientific_role: released_model_inference_parity_and_source_resolution_not_refit
+citations:
+  article: https://doi.org/10.1038/s43587-024-00763-4
+  official_training_archive: https://doi.org/10.5281/zenodo.10034994
+  official_repository: https://github.com/the-ahuja-lab/AgeXtend
+  official_repository_commit: 07f40d60932c31e6baf280afd56ecc26ada449cd
+sources:
+  training_dataset:
+    path: external_sources/AgeXtend_official/datasets/Geropredictor/HOLY_AgingDataset.tsv
+    sha256: c10ec2627877fdf9d05b1b93862bb12e28db44de578068166e810c385a06ae50
+  fitted_model:
+    path: external_sources/AgeXtend_official/src/models/AIM_D_Signaturizer_model_svm_HPTuned_fitted.pkl
+    sha256: c625f8caa2a63fce5466942ccea133a620d88f4ed35f0c46a86bb02e8972a2c3
+  predictor_code:
+    path: external_sources/AgeXtend_official/src/codes/Predictor.py
+    sha256: cce563380b813b67673ed1a8046c45e4f0ff073c6aacbe7b7bc771d8af288a1b
+  supplementary_workbook:
+    path: external_data/agextend_2024/43587_2024_763_MOESM2_ESM.xlsx
+    sha256: 3b7d05617bc415c8f70d7ffb37af4f63a14a8440990f37b7aa26bf7816f4ffb2
+  source_data_workbook:
+    path: external_data/agextend_2024/43587_2024_763_MOESM3_ESM.xlsx
+    sha256: 6b8c4390d3dd52b53db46b5aead5bdeb52c18e370f5a8e8eeaf6fc5345c246ec
+expected:
+  training_rows: 972
+  positive: 583
+  negative: 389
+  features: 71
+  challenge_rows: 84
+  folds: 10
+  loocv_rows: 972
+official_model:
+  estimator: sklearn.svm.SVC
+  kernel: rbf
+  C: 1.5
+  gamma: 2.5
+  probability: true
+  selected_features: 71
+  feature_names_sha256: 8fda31de7e202ffcebd3f87e81275f8ada2cf70b58eb2d40dda84f69137c187c
+parity:
+  panel: official_84_compound_supplementary_table_6_in_original_row_order
+  probability_atol: 1.0e-8
+  threshold_or_model_selection_on_challenge: false
+  imputation: reproduce_official_query_batch_column_mean_verbatim
+  environment:
+    python: '3.8'
+    signaturizer: 1.1.11
+    rdkit_pypi: 2022.3.1
+    official_requirements_scikit_learn: 1.2.1
+    fitted_pickle_reports_scikit_learn: 1.0.2
+historical_refit:
+  status: BLOCKED_PARTIAL
+  blockers:
+    - unpublished_random_75_25_split_membership
+    - unpublished_cross_validation_fold_identities_and_random_seeds
+    - absent_complete_training_script
+    - unpublished_smote_and_boruta_random_states
+  do_not_substitute_new_folds_and_call_them_reproduction: true
+immutability:
+  existing_outputs_modified: false
+  destination_must_not_exist: true

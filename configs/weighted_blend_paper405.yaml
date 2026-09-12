@@ -1,0 +1,97 @@
+schema_version: geroprotector.weighted_blend_paper405.protocol.v1
+scientific_role: exact_raw_row_paper_holdout_contextual_nested_weighted_blend
+headline_eligible: false
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+features:
+  paper_descriptors:
+    - Total Molweight
+    - cLogP
+    - H-Acceptors
+    - H-Donors
+    - Total Surface Area
+    - Relative PSA
+    - Rotatable Bonds
+  morgan_radius: 2
+  morgan_bits: 2048
+  rdkit2d_max_features: 500
+
+components:
+  cross_fitted_oof_folds: 5
+  cross_fitted_oof_seed: 42
+  extra_trees:
+    n_estimators: 1000
+    max_features: sqrt
+    min_samples_leaf: 1
+    class_weight: balanced
+    random_state: 42
+    n_jobs: 1
+  tanimoto_svc:
+    C: 1.0
+    fixed_logistic_of_decision: true
+  paper_svm:
+    kernel: linear
+    C: 1.0
+    gamma: 1.0
+    probability: true
+    random_state: 42
+    preprocessing: none_matching_public_notebook
+  tabpfn_v2:
+    required_package_version: 8.0.8
+    checkpoint_path: checkpoints/tabpfn-v2-classifier.ckpt
+    checkpoint_sha256: f65a35685aeef42e31b796d9bfa34e68d6fc780bc98e7bff7763802964cf435f
+    model_version: v2
+    device: cuda
+    singleton_inference: true
+    repeat_atol: 0.000001
+    telemetry_disabled: true
+
+weight_search:
+  components: [paper_svm, tanimoto_svc, tabpfn_v2]
+  minimum_weight: 0.05
+  step: 0.05
+  sum: 1.0
+  expected_grid_candidates: 171
+  primary_metric: auprc_average_precision_positive
+  auprc_practical_tie: 0.005
+  tie_break: [mcc, macro_f1, brier, distance_from_equal, candidate_id]
+
+nested_meta_cv:
+  outer_folds: 5
+  outer_seed: 314159
+  inner_folds: 4
+  inner_seed_base: 271828
+  full_train_oof_folds: 5
+  full_train_oof_seed: 42
+  outer_inner_component_seed_base: 10000
+  outer_refit_component_seed_base: 20000
+  full_train_oof_component_seed_base: 42
+  final_full_train_component_seed: 42
+
+thresholds:
+  primary: maximize_mcc_on_active_train_oof
+  screening: maximize_mcc_subject_to_recall_and_specificity_floors
+  screening_recall_floor: 0.50
+  screening_specificity_floor: 0.75
+
+evaluation:
+  fit_components_once_on_full_324_train: true
+  evaluate_every_grid_weight_on_81_test: true
+  per_weight_retraining_required: false
+  per_weight_predictions_are_deterministic_recombinations: true
+  primary_weight_selected_before_test_evaluation: true
+  outer_test_used_for_weight_or_threshold_selection: false
+  test_sweep_role: exploratory_multiple_comparison_table_not_model_selection
+  hagr_loaded: false

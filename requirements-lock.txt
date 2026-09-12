@@ -1,0 +1,13 @@
+# CPU/core environment. V6 foundation-model packages are deliberately staged separately.
+joblib==1.5.2
+jsonschema==4.25.1
+numpy==2.0.2
+pandas==2.3.2
+pyarrow==21.0.0
+PyYAML==6.0.2
+rdkit==2025.3.6
+scikit-learn==1.7.1
+scipy==1.16.1
+xgboost==3.3.0
+pytest==8.4.1
+ruff==0.12.8

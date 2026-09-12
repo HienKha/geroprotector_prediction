@@ -1,0 +1,25 @@
+pipeline: V9_CAUSAL_INVARIANT
+extends: [data.yaml, validation.yaml]
+descriptor_branch:
+  max_input_features: 64
+  redundancy_spearman_threshold: 0.90
+  algorithms: [stable_pc, notears, elastic_net_stability]
+  bootstrap_repeats: 200
+  selection_frequency: [0.50, 0.65, 0.80]
+  max_selected_features: [4, 8, 12, 16, 24]
+environments:
+  families: [scaffold, physicochemical_regime, np_likeness_regime, latent_target_independent]
+  n_environments: [3, 4, 5]
+  minimum_environment_size: 25
+graph_branch:
+  encoder: GINE
+  hidden_dim: [64, 128]
+  n_layers: [2, 3, 4]
+  robust_objectives: [ERM, GroupDRO, CORAL, IRMv1, CIGA_inspired]
+  rationale_ratio: [0.20, 0.35, 0.50, 0.70]
+selection:
+  mean_ap_weight: 1.0
+  environment_sd_penalty: 0.1
+  worst_environment_ap_weight: 0.1
+claims:
+  causal_language_allowed: false

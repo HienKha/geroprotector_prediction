@@ -1,0 +1,60 @@
+schema_version: geroprotector.weighted_blend_tabfm.protocol.v1
+scientific_role: >-
+  train_oof_weight_search_over_svm_tanimoto_tabfm_using_the_identical_171_candidate
+  grid_and_selection_rule_that_produced_the_locked_010_060_030_tabpfn_blend
+
+search_contract:
+  weights_selected_on_train_oof_only: true
+  reuses_the_sealed_171_candidate_grid: true
+  no_component_is_refitted: true
+  test_or_external_labels_used_for_weight_or_threshold: false
+  primary_metric: auprc_average_precision_positive
+  tie_break: [auprc_practical_tie_0.005, mcc, macro_f1, brier, distance_from_equal, candidate_id]
+  threshold_rule: maximize_mcc_on_324_train_oof
+  note: >-
+    Slot 3 is TabFM. The sealed grid helper names that slot "tabpfn" internally;
+    the manifest records the mapping explicitly so nothing is ambiguous.
+
+reference:
+  # From outputs/screeningblend_tabfm_20260821/RUN_MANIFEST.json, used only to
+  # score the already-existing equal-thirds TabFM blend side by side.
+  equal_thirds_tabfm_oof_threshold: 0.5263794471128225
+
+paper_split:
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+
+sealed_inputs:
+  weighted_protocol:
+    path: configs/weighted_blend_paper405.yaml
+    sha256: 0d29499590e9ad34893665a44a7e83cfc332d50ead0b612e93b8e533ab25e589
+  tabfm_train_oof:
+    path: outputs/screeningblend_tabfm_20260821/d1_train_oof_predictions.csv
+    sha256: b65ab9e8ecf45e7965afad1f0214c73734ffb0b20b379b644bb2ed6a982d2121
+  tabfm_d1_test:
+    path: outputs/screeningblend_tabfm_20260821/d1_test_predictions.csv
+    sha256: 26bde3f7ad3a8f63b3ce9ae8fe2f8688e8cbc9ada299b008d6bd06c609a0facd
+  tabfm_drugage:
+    path: outputs/screeningblend_tabfm_20260821/external_predictions_drugage.csv
+    sha256: d8cfd6520737ee31b318d988b51ff1d69e0716589c38e4bc7b4a25e60f6a07a6
+  tabfm_agextend:
+    path: outputs/screeningblend_tabfm_20260821/external_predictions_agextend.csv
+    sha256: 1a802c26a203d85e1b7e4ee1b3ab4ca0b9788eaaf99e82d6df9572d58d4158a5
+  tabfm_metrics:
+    path: outputs/screeningblend_tabfm_20260821/metrics_all.csv
+    sha256: 3fbf9dbcd92c3368c462511e65231fa102d0296c7576aa5ca2ee70c860d9d839
+  eq_thirds_comparison:
+    path: outputs/blend_comparison_svm_tani_v2_bishop_20260819/comparison_metrics.csv
+    sha256: 6a556f2d400d4055342503372acb35af302af7775076639ceef647f24f9c87c7
+  altmodels_metrics:
+    path: outputs/screeningblend_altmodels_20260819/metrics_all.csv
+    sha256: 3e16bdd9357be2757adcb288971fb3a394077790923d2e396fa352aed202c11f
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

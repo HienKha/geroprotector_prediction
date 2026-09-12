@@ -1,0 +1,24 @@
+pipeline: V10_HYPER_CONNECTIONS
+extends: [data.yaml, validation.yaml]
+input_panels: [chemistry_32, rdkit2d_217, morgan_svd, frozen_embedding_optional]
+variants:
+  hc_tabular:
+    backbones: [mlp, ft_transformer]
+  hc_gine:
+    enabled: true
+hyper_connections:
+  n_streams: [2, 4]
+  n_blocks_or_layers: [2, 3, 4, 6]
+  d_model: [64, 96, 128, 192]
+  type: [static, dynamic]
+  primary_type: static
+  residual_equivalent_initialization: true
+regularization:
+  lambda_identity: [0.0, 1e-4, 1e-3, 1e-2]
+  lambda_sparse: [0.0, 1e-5, 1e-4]
+  lambda_diversity: [0.0, 1e-4, 1e-3]
+fair_comparison:
+  parameter_tolerance_fraction: 0.10
+  same_seeds_and_budget: true
+search:
+  trials_per_outer_job: 25

@@ -1,0 +1,92 @@
+schema_version: geroprotector.repeated_rank_stability.protocol.v1
+scientific_role: >-
+  repeated_random_partition_stability_of_model_family_rankings_on_the_d1_training
+  _partition_only. This is a stability study, not a model-selection procedure. Its
+  results may not be used to replace the locked GB4 blend or to choose a new
+  manuscript model.
+
+data_boundary:
+  rows: d1_train_only_324
+  d1_test_labels_loaded: false
+  drugage_outcomes_loaded: false
+  agextend_outcomes_loaded: false
+
+folds:
+  estimator: sklearn.model_selection.StratifiedKFold
+  n_splits: 5
+  shuffle: true
+  seeds: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+  repeats: 10
+  fold_jobs: 50
+  one_oof_prediction_per_compound_per_repeat: true
+  component_seed_rule: 42_plus_fold_index_fixed_across_repeats
+  component_seed_rationale: >-
+    Hold algorithm RNG fixed while the partition seed changes, so this experiment
+    measures partition sensitivity rather than a mixture of partition and model
+    stochasticity. This also reproduces the sealed seed-42 fold convention.
+
+panel:
+  base_models: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm, catboost_full,
+                xgboost_full, lightgbm_full, tabm_full]
+  blends:
+    blend3_equal: [paper_svm, tabpfn_v2, tabfm]
+    gb4_equal: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm]
+  blend_weights: equal
+  models_added_after_seeing_results: false
+
+threshold:
+  fixed: 0.5
+  tuned: false
+
+metrics:
+  primary: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1,
+            brier, cohen_kappa]
+  secondary: [sensitivity, specificity]
+  lower_is_better: [brier]
+
+# These strict replay tolerances are fixed before the corrected run. The earlier
+# interrupted engineering run used the wrong constant TabFM seed and is quarantined;
+# its mismatch is not treated as evidence of TabFM nondeterminism.
+seed42_parity:
+  required: true
+  reference_runs:
+    paper_svm: quad_blend_20260822/cv5_train_oof_predictions.csv
+    tanimoto_svc: quad_blend_20260822/cv5_train_oof_predictions.csv
+    tabpfn_v2: quad_blend_20260822/cv5_train_oof_predictions.csv
+    tabfm: quad_blend_20260822/cv5_train_oof_predictions.csv
+    catboost_full: nineml_cv5_full_20260823/cv5_train_oof_predictions.csv
+    xgboost_full: nineml_cv5_full_20260823/cv5_train_oof_predictions.csv
+    lightgbm_full: nineml_cv5_full_20260823/cv5_train_oof_predictions.csv
+    tabm_full: screeningblend_altmodels_20260819/d1_train_oof_predictions.csv
+  tolerances:
+    # deterministic sklearn estimators with fixed random_state
+    paper_svm: 1.0e-12
+    tanimoto_svc: 1.0e-12
+    # deterministic boosted-tree libraries with fixed seeds
+    catboost_full: 1.0e-10
+    xgboost_full: 1.0e-10
+    lightgbm_full: 1.0e-10
+    # in-context foundation models: no gradient training, but GPU reduction order
+    # is not guaranteed bitwise.  Matches the sealed run's own repeat_atol scale.
+    tabpfn_v2: 1.0e-06
+    tabfm: 1.0e-06
+    tabm_full: 1.0e-10
+  blocking: true
+  blocking_note: >-
+    seeds 43..51 are not run until every declared tolerance passes, and no
+    tolerance may be relaxed after the comparison.
+
+bootstrap:
+  kind: compound_cluster
+  note: >-
+    Compound IDs are resampled and all ten repeat predictions of a sampled
+    compound travel together, because the same 324 compounds recur across
+    repeats and the 50 folds are not 50 independent observations.
+  n_resamples: 2000
+  seed: 20260825
+  confidence_level: 0.95
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true
+  existing_results_modified: false

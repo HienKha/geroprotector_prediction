@@ -1,0 +1,83 @@
+schema_version: geroprotector.chemical_space_cv.protocol.v1
+scientific_role: >-
+  chemistry_aware_grouped_cross_validation_on_the_d1_training_partition_only.
+  Tests whether random-split conclusions persist when related chemistry is kept
+  inside one fold. Not a model-selection procedure.
+
+data_boundary:
+  rows: d1_train_only_324
+  d1_test_labels_loaded: false
+  drugage_outcomes_loaded: false
+  agextend_outcomes_loaded: false
+
+# Both registries are built BEFORE any label or performance is inspected. Group
+# construction is label-free; only the final group-to-fold assignment is
+# approximately stratified.
+registries:
+  C1_scaffold:
+    kind: bemis_murcko_framework
+    include_chirality: false
+    acyclic_policy: morgan_tanimoto_connected_components
+    acyclic_similarity_threshold: 0.40
+    fingerprint: {family: morgan_bit, radius: 2, n_bits: 2048, use_chirality: false}
+    assignment: sklearn.model_selection.StratifiedGroupKFold
+    n_splits: 5
+    shuffle: true
+    random_state: 20260825
+    feasibility:
+      min_positive_per_fold: 5
+      min_negative_per_fold: 5
+  C2_similarity_component:
+    kind: fingerprint_similarity_connected_components
+    similarity_threshold: 0.40
+    fingerprint: {family: morgan_bit, radius: 2, n_bits: 2048, use_chirality: false}
+    components_are_indivisible: true
+    assignment: sklearn.model_selection.StratifiedGroupKFold
+    n_splits: 5
+    shuffle: true
+    random_state: 20260825
+    feasibility:
+      # Declared before the components are computed. If a giant component makes
+      # five non-degenerate folds impossible, the registry stops and a formal
+      # feasibility report is written. The threshold is NOT changed afterwards.
+      max_single_group_fraction_of_rows: 0.35
+      min_positive_per_fold: 5
+      min_negative_per_fold: 5
+      on_infeasible: stop_and_report
+
+reference_registry:
+  name: random_seed42_stratified_5fold
+  source_streams:
+    paper_svm: quad_blend_20260822/cv5_train_oof_predictions.csv
+    tanimoto_svc: quad_blend_20260822/cv5_train_oof_predictions.csv
+    tabpfn_v2: quad_blend_20260822/cv5_train_oof_predictions.csv
+    tabfm: quad_blend_20260822/cv5_train_oof_predictions.csv
+    catboost_full: nineml_cv5_full_20260823/cv5_train_oof_predictions.csv
+    xgboost_full: nineml_cv5_full_20260823/cv5_train_oof_predictions.csv
+    lightgbm_full: nineml_cv5_full_20260823/cv5_train_oof_predictions.csv
+    tabm_full: screeningblend_altmodels_20260819/d1_train_oof_predictions.csv
+
+panel:
+  base_models: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm, catboost_full,
+                xgboost_full, lightgbm_full, tabm_full]
+  blends:
+    blend3_equal: [paper_svm, tabpfn_v2, tabfm]
+    gb4_equal: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm]
+
+threshold:
+  fixed: 0.5
+  tuned: false
+
+metrics:
+  primary: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1,
+            brier, cohen_kappa]
+  lower_is_better: [brier]
+
+applicability:
+  nearest_train_tanimoto: true
+  report_fraction_above: [0.3, 0.4, 0.5, 0.6]
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true
+  existing_results_modified: false

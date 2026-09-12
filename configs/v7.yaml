@@ -1,0 +1,27 @@
+pipeline: V7_YANDEX_TABULAR
+extends: [data.yaml, validation.yaml]
+input_panels: [chemistry_32, rdkit2d_217, compact_multifp_latent, frozen_embedding_optional]
+tabm:
+  enabled: true
+  k: [8, 16, 32]
+  n_blocks: [1, 2, 3, 4]
+  d_block: [64, 96, 128, 192, 256]
+  dropout: [0.0, 0.1, 0.2, 0.3]
+  num_embeddings: [none, piecewise_linear, periodic]
+  n_bins: [8, 16, 32, 64]
+  independent_member_loss: true
+  inference_average: probabilities
+tabr:
+  enabled: true
+  retrieval_metric: [learned, exact_tanimoto, hybrid]
+  k_neighbors: [4, 8, 16, 32]
+  hybrid_lambda: [0.25, 0.50, 0.75]
+  retrieval_index: training_only
+controls: [ft_transformer, yandex_resnet]
+tabnet_ssl:
+  enabled: true
+  attribution: google_not_yandex
+  unlabeled_pool: broad_structure_only
+  mask_ratio: [0.15, 0.30, 0.50]
+search:
+  optuna_trials_per_outer_job: 30

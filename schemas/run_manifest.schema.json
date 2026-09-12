@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/geroprotector/schemas/run_manifest.schema.json",
+  "title": "Sealed internal nested-CV run manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "pipeline_id",
+    "suite",
+    "created_utc",
+    "status",
+    "code",
+    "configuration",
+    "environment",
+    "data",
+    "splits",
+    "models",
+    "outer_repeats",
+    "outer_folds",
+    "external_firewall",
+    "artifact_manifest_sha256",
+    "canonical_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "geroprotector.run_manifest.v2"
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]{2,79}$"
+    },
+    "pipeline_id": {
+      "type": "string",
+      "enum": [
+        "reference",
+        "V5_ELIXIRFP_REBUILT",
+        "V6_TABULAR_FOUNDATION_MODELS",
+        "V5BIS_PAPER80",
+        "V6BIS_PAPER80"
+      ]
+    },
+    "suite": {"type": "string", "enum": ["core", "full"]},
+    "created_utc": {"type": "string", "format": "date-time"},
+    "status": {"type": "string", "const": "complete"},
+    "code": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_tree_sha256",
+        "git_commit",
+        "dirty_worktree",
+        "entrypoint"
+      ],
+      "properties": {
+        "source_tree_sha256": {"$ref": "#/$defs/sha256"},
+        "git_commit": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{7,64}$"
+        },
+        "dirty_worktree": {"type": ["boolean", "null"]},
+        "entrypoint": {"type": "string", "const": "gero run nested-cv"}
+      }
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resolved_config_sha256",
+        "resolved_config_path",
+        "schema_validation_passed",
+        "reference_config_sha256",
+        "reference_protocol_lock_validated"
+      ],
+      "properties": {
+        "resolved_config_sha256": {"$ref": "#/$defs/sha256"},
+        "resolved_config_path": {"type": "string", "const": "resolved_config.yaml"},
+        "schema_validation_passed": {"type": "boolean", "const": true},
+        "reference_config_sha256": {"$ref": "#/$defs/sha256"},
+        "reference_protocol_lock_validated": {"type": "boolean", "const": true}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "python",
+        "implementation",
+        "platform",
+        "machine",
+        "packages",
+        "package_distribution_versions",
+        "packages_lock_sha256"
+      ],
+      "properties": {
+        "python": {"type": "string", "minLength": 1},
+        "implementation": {"type": "string", "minLength": 1},
+        "platform": {"type": "string", "minLength": 1},
+        "machine": {"type": "string"},
+        "packages": {
+          "type": "object",
+          "additionalProperties": {"type": ["string", "null"]}
+        },
+        "package_distribution_versions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 0,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          }
+        },
+        "packages_lock_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "curation_manifest_sha256",
+        "curated_cohort_sha256",
+        "curated_identity_label_sha256",
+        "provenance_table_sha256",
+        "n_total",
+        "n_positive",
+        "n_weak_reference",
+        "n_prior_candidates_used_as_labels",
+        "source_label_confounding_disclosed"
+      ],
+      "properties": {
+        "curation_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "curated_cohort_sha256": {"$ref": "#/$defs/sha256"},
+        "curated_identity_label_sha256": {"$ref": "#/$defs/sha256"},
+        "provenance_table_sha256": {"$ref": "#/$defs/sha256"},
+        "n_total": {"type": "integer", "const": 382},
+        "n_positive": {"type": "integer", "const": 202},
+        "n_weak_reference": {"type": "integer", "const": 180},
+        "n_prior_candidates_used_as_labels": {"type": "integer", "const": 0},
+        "source_label_confounding_disclosed": {"type": "boolean", "const": true}
+      }
+    },
+    "splits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "split_manifest_sha256",
+        "registry_sha256",
+        "inner_registry_sha256",
+        "primary_strategy",
+        "outer_test_used_for_selection",
+        "group_overlap_count",
+        "identity_overlap_count"
+      ],
+      "properties": {
+        "split_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "registry_sha256": {"$ref": "#/$defs/sha256"},
+        "inner_registry_sha256": {"$ref": "#/$defs/sha256"},
+        "primary_strategy": {
+          "type": "string",
+          "enum": ["similarity_components", "paper_random_80_20"]
+        },
+        "outer_test_used_for_selection": {"type": "boolean", "const": false},
+        "group_overlap_count": {"type": "integer", "minimum": 0},
+        "identity_overlap_count": {"type": "integer", "const": 0}
+      }
+    },
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "outer_repeats": {"type": "integer", "enum": [1, 5]},
+    "outer_folds": {"type": "integer", "enum": [1, 5]},
+    "external_firewall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hagr_labels_loaded_during_development",
+        "hagr_used_for_model_selection",
+        "external2_score_once_policy_enforced",
+        "external2_scored"
+      ],
+      "properties": {
+        "hagr_labels_loaded_during_development": {"type": "boolean", "const": false},
+        "hagr_used_for_model_selection": {"type": "boolean", "const": false},
+        "external2_score_once_policy_enforced": {"type": "boolean", "const": true},
+        "external2_scored": {"type": "boolean", "const": false}
+      }
+    },
+    "artifact_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "canonical_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "pipeline_id": {"enum": ["V5BIS_PAPER80", "V6BIS_PAPER80"]}
+        },
+        "required": ["pipeline_id"]
+      },
+      "then": {
+        "properties": {
+          "outer_repeats": {"const": 1},
+          "outer_folds": {"const": 1},
+          "splits": {
+            "properties": {
+              "primary_strategy": {"const": "paper_random_80_20"}
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "outer_repeats": {"const": 5},
+          "outer_folds": {"const": 5},
+          "splits": {
+            "properties": {
+              "primary_strategy": {"const": "similarity_components"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

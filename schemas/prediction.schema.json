@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/geroprotector/schemas/prediction.schema.json",
+  "title": "One compound-level prediction record",
+  "description": "Canonical long-format prediction contract. One row represents one compound, one model, one outer fold/repeat, and one evaluation role. Labels are optional so the same schema can be used for label-blind external inference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "pipeline_id",
+    "model_id",
+    "split_strategy",
+    "evaluation_role",
+    "compound_id",
+    "identity_group_id",
+    "primary_component_id",
+    "probability_raw",
+    "probability_calibrated",
+    "created_utc"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pipeline_id": {
+      "type": "string",
+      "pattern": "^(reference|V5BIS_PAPER80|V6BIS_PAPER80|V(5|6|7|8|9|10|11|12|13|14|15|16)(_|$))"
+    },
+    "model_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "representation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "checkpoint_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "split_strategy": {
+      "type": "string",
+      "enum": [
+        "similarity_components",
+        "murcko_scaffold",
+        "identity_grouped_stratified",
+        "paper_random_80_20",
+        "temporal_external",
+        "prospective_batch",
+        "other_locked"
+      ]
+    },
+    "evaluation_role": {
+      "type": "string",
+      "enum": [
+        "inner_oof",
+        "outer_test",
+        "external_label_blind",
+        "external_scored_once",
+        "prospective_locked"
+      ]
+    },
+    "repeat": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "outer_fold": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "inner_fold": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "seed": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "compound_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parent_inchikey": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{14}-[A-Z]{10}-[A-Z]$"
+    },
+    "canonical_smiles_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "identity_group_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primary_component_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "murcko_scaffold_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_role": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "reported_positive",
+        "weak_chembl_reference",
+        "prior_ml_unlabeled",
+        "external",
+        "prospective",
+        null
+      ]
+    },
+    "y_true": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "enum": [
+        0,
+        1,
+        null
+      ]
+    },
+    "probability_raw": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "probability_calibrated": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "probability_beta_sensitivity": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "decision_threshold": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "predicted_class": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "enum": [
+        0,
+        1,
+        null
+      ]
+    },
+    "uncertainty_score": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.0
+    },
+    "ensemble_member_count": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "nearest_train_tanimoto": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "robust_descriptor_distance": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.0
+    },
+    "inside_applicability_domain": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "abstained": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "adaptation_used": {
+      "type": "boolean",
+      "default": false
+    },
+    "adaptation_data_role": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_utc": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "evaluation_role": {
+            "const": "external_label_blind"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "y_true": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "predicted_class": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "predicted_class"
+        ]
+      },
+      "then": {
+        "required": [
+          "decision_threshold"
+        ]
+      }
+    }
+  ]
+}

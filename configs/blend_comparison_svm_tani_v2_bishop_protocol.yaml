@@ -1,0 +1,81 @@
+schema_version: geroprotector.blend_comparison_svm_tani_v2_bishop.protocol.v1
+scientific_role: >-
+  post_lock_comparison_table_of_seven_prespecified_model_and_threshold_combinations,
+  reusing_sealed_component_probability_streams_without_refitting_anything
+
+# This run fits nothing and calls no model.  It reads already-sealed component
+# probability streams and either (a) copies an already-sealed metric row verbatim,
+# or (b) re-weights sealed per-row probabilities into the equal-thirds SVM/Tanimoto/
+# TabPFNv2 blend and applies the same deterministic OOF-MCC threshold selector every
+# other run in this repository uses.  No test or external label is used to fit,
+# weight or threshold anything.
+
+requested_combinations:
+  - {model: blend_equal_thirds_svm_tani_tabpfnv2, weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333], threshold: fixed_0p5, source: computed_this_run}
+  - {model: blend_equal_thirds_svm_tani_tabpfnv2, weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333], threshold: oof_mcc, source: computed_this_run}
+  - {model: blend_010_060_030_svm_tani_tabpfnv2, weights: [0.10, 0.60, 0.30], threshold: fixed_0p5, source: sealed_screeningblend_ablation_papersvm_20260818}
+  - {model: blend_010_060_030_svm_tani_tabpfnv2, weights: [0.10, 0.60, 0.30], threshold: oof_mcc, source: sealed_screeningblend_ablation_papersvm_20260818}
+  - {model: blend_equal_thirds_svm_tani_bishop, weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333], threshold: fixed_0p5, source: sealed_screeningblend_altmodels_20260819}
+  - {model: blend_equal_thirds_svm_tani_bishop, weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333], threshold: oof_mcc, source: sealed_screeningblend_altmodels_20260819}
+  - {model: tabpfn_v2, weights: null, threshold: fixed_0p5, source: sealed_screeningblend_ablation_papersvm_20260818}
+  - {model: tabpfn_v2, weights: null, threshold: oof_mcc, source: sealed_screeningblend_ablation_papersvm_20260818}
+  - {model: bishop, weights: null, threshold: fixed_0p5, source: sealed_screeningblend_altmodels_20260819}
+  - {model: bishop, weights: null, threshold: oof_mcc, source: sealed_screeningblend_altmodels_20260819}
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+threshold_rule:
+  fixed_0p5: 0.5
+  oof_mcc_source: full_324_d1_train_cross_fitted_oof_mcc
+  oof_mcc_selector: same_deterministic_select_threshold_used_by_every_other_run
+  external_labels_may_select_or_change_threshold: false
+
+endpoints:
+  d1_paper_test: paper_binary
+  drugage: significant_positive_retrieval_background_not_certified_negative
+  agextend: published_independent_table6_binary
+
+sealed_inputs:
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  ablation_d1_metrics:
+    path: outputs/screeningblend_ablation_papersvm_20260818/d1_component_metrics.csv
+    sha256: b027b9f9e97db6197beb6cf93f36d195935e43a4129dbe54943719de9e86dbff
+  ablation_external_metrics:
+    path: outputs/screeningblend_ablation_papersvm_20260818/external_component_metrics.csv
+    sha256: 92fb7942f8a495c9435a3dace6aafbc0540e80706442b9cca21deb909902174e
+  altmodels_metrics:
+    path: outputs/screeningblend_altmodels_20260819/metrics_all.csv
+    sha256: 3e16bdd9357be2757adcb288971fb3a394077790923d2e396fa352aed202c11f
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true
+
+output_schema:
+  comparison_metrics.csv:
+    columns: [cohort, endpoint, n_test, model, weights, threshold_rule, threshold,
+              result_source, auprc_average_precision_positive, auroc, brier, mcc,
+              macro_f1, recall_sensitivity, specificity, accuracy, balanced_accuracy,
+              precision_positive, npv, cohen_kappa, log_loss, tn, fp, fn, tp]

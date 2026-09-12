@@ -1,0 +1,70 @@
+schema_version: geroprotector.kapsiani_historical_benchmark.protocol.v1
+protocol_status: declared_after_official_source_audit_before_first_model_fit
+scientific_role: fixed_panel_protocol_reconstruction_on_official_historical_endpoint
+citations:
+  article: https://doi.org/10.1038/s41598-021-93070-6
+  official_supplement: https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41598-021-93070-6/MediaObjects/41598_2021_93070_MOESM2_ESM.xlsx
+  drugage: https://genomics.senescence.info/drugs/
+source:
+  path: external_sources/41598_2021_93070_MOESM2_ESM.xlsx
+  sha256: e98da1592a44199ab809c7a42e018d7be255b6ae11b0b26829521f60fe3ae2c3
+  cohort_sheet: DrugAge Database
+  selected_features_sheet: Feature Ranking
+  cohort_records_sha256: dcb27911a58eebf970fc7c0d046ed1a90c5d82b29c1194a56b06d21a3564f681
+  selected_feature_names_sha256: 4cefb101ded95ef24dc0003079d8b5620b819375a0a0d3e6a5c01701c4d8c74d
+expected:
+  rows: 1430
+  positive: 304
+  literature_negative: 1126
+  selected_moe_features: 69
+endpoint:
+  positive: standardized_DrugAge_Build_3_compound
+  negative: curated_literature_negative_from_Barardo_et_al_2017
+  not_equivalent_to_build5_background: true
+curation:
+  identity: standardized_parent_connectivity_inchikey
+  collapse_concordant_duplicates: true
+  exclude_conflicting_identity_groups: true
+  exclude_metal_or_coordination_complex: true
+  exclude_unresolved_multi_organic_mixture: true
+  report_source_to_analysis_attrition: true
+evaluation:
+  splitter: StratifiedKFold
+  n_splits: 10
+  shuffle: true
+  random_state: 42
+  fixed_threshold: 0.5
+  threshold_tuning: false
+panel: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm, catboost_full,
+        xgboost_full, lightgbm_full, tabm_full, blend3_equal, gb4_equal]
+metrics: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1,
+          brier, cohen_kappa, recall_sensitivity, specificity]
+published_test:
+  role: extraction_only_not_a_comparator_using_the_same_split
+  rows: 286
+  positive: 52
+  negative: 234
+  auroc: 0.815
+  accuracy: 0.853
+  tn: 223
+  fp: 11
+  fn: 31
+  tp: 21
+historical_rf:
+  status: BLOCKED_PARTIAL
+  blockers:
+    - unpublished_random_80_20_row_membership_and_seed
+    - unpublished_tenfold_assignments
+    - unavailable_354_by_1430_MOE_descriptor_matrix
+    - proprietary_MOE_2019_01_energy_minimization_environment
+    - unspecified_scikit_learn_version_and_random_forest_random_state
+    - absent_trained_random_forest_artifact
+  paper_feature_selection_is_not_described_as_nested_within_each_cv_fold: true
+  do_not_call_this_fixed_panel_registry_an_exact_reproduction: true
+leakage:
+  source_labels_used_only_for_duplicate_conflict_detection_stratification_and_metrics: true
+  fixed_panel_or_threshold_selected_on_this_endpoint: false
+  d1_test_or_build5_outcomes_used_for_selection: false
+immutability:
+  existing_outputs_modified: false
+  destination_must_not_exist: true

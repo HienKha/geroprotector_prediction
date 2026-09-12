@@ -1,0 +1,39 @@
+pipeline: reference
+extends: [data.yaml, validation.yaml]
+primary_reference_model: R2_extra_trees_v3_compatible
+models:
+  prevalence:
+    role: R0
+  elastic_net:
+    role: R1
+    C: [0.01, 0.1, 1.0, 10.0]
+    l1_ratio: [0.0, 0.25, 0.5, 0.75, 1.0]
+  extra_trees:
+    role: R2
+    n_estimators: 1000
+    min_samples_leaf: [1, 2, 3, 5]
+    max_features: [sqrt, 0.05, 0.10, 0.25, 0.50]
+    class_weight: [balanced]
+  xgboost:
+    role: R3
+    n_trials: 30
+    max_depth: [1, 2, 3]
+    learning_rate: [0.01, 0.03, 0.05]
+    n_estimators: [200, 400, 800]
+    min_child_weight: [2, 5, 10]
+    reg_alpha: [0.0, 0.5, 2.0]
+    reg_lambda: [2.0, 10.0, 30.0]
+  exact_tanimoto_svc:
+    role: R4
+    C: [0.1, 1.0, 10.0]
+  paper_seven_descriptor_linear_svm:
+    role: R5
+    C: [1.0]
+    evaluation: grouped_primary_only
+features:
+  rdkit2d: true
+  morgan_count_r2_2048: true
+  maccs_167: true
+  preprocessing: fold_local
+  paper_seven_descriptors:
+    [total_molweight, clogp, h_acceptors, h_donors, total_surface_area, relative_psa, rotatable_bonds]

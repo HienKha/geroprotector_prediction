@@ -1,0 +1,57 @@
+schema_version: geroprotector.tabnet7feat.protocol.v1
+scientific_role: standalone TabNet on the paper's seven DataWarrior descriptors, completing
+  the slot-3 model set that blend7feat_20260821 left at tabpfn_v2/tabfm/bishop/tabm
+design:
+  slot3_feature_panel: paper 7 DataWarrior descriptors
+  trained_on: D1 train (324) only
+  evaluated_on:
+  - cv5_train_oof (n=324)
+  - d1_test_80_20 (n=81)
+  threshold_rule: fixed 0.5 (common, no selection)
+  test_rows_used_in_any_fit: false
+  matches_protocol_of: blend7feat_20260821
+altmodels:
+  alt_model_training:
+    seed_ensemble:
+    - 0
+    - 1
+    - 2
+    inner_validation_fraction: 0.2
+    inner_validation_stratified: true
+    early_stopping_metric: inner_validation_cross_entropy
+    early_stopping_patience: 30
+    max_epochs: 200
+    batch_size: 64
+    device: cuda
+    inner_validation_rows_come_only_from_the_current_fit_set: true
+  alt_models:
+    tabnet:
+      source: pytorch_tabnet_pypi_package
+      required_package_version: 4.1.0
+      hyperparameters:
+        n_d: 8
+        n_a: 8
+        n_steps: 3
+        gamma: 1.3
+        n_independent: 2
+        n_shared: 2
+        lambda_sparse: 0.001
+        learning_rate: 0.02
+        virtual_batch_size: 32
+paper_split:
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+sealed_inputs:
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

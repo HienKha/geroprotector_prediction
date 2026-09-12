@@ -1,0 +1,25 @@
+pipeline: V11_TABEBM_AUGMENTATION
+extends: [data.yaml, validation.yaml]
+representations: [chemistry_32, rdkit2d_pca_32, rdkit2d_pca_64, morgan_svd_64_plus_descriptors, v8_frozen_64]
+ebm:
+  class_specific: true
+  hidden_dims: [[64, 64], [128, 64], [128, 128]]
+  activation: [SiLU, GELU]
+  spectral_norm: true
+  sgld_steps: [20, 50, 100]
+  sgld_step_size: [0.001, 0.003, 0.01]
+  persistent_buffer_size: [256, 512, 1024]
+acceptance:
+  finite_required: true
+  robust_z_max: 6.0
+  energy_percentile_range: [0.01, 0.99]
+  minimum_real_distance: [0.05, 0.10, 0.20]
+  cross_class_energy_margin: [0.0, 0.1, 0.5]
+augmentation:
+  synthetic_to_real_ratio: [0.0, 0.25, 0.5, 1.0]
+  synthetic_weight: [0.25, 0.5, 1.0]
+  preserve_prevalence: true
+downstream: [elastic_net, extra_trees, tabm_mini]
+rejection:
+  synthetic_real_auc_max: 0.80
+  near_duplicate_rate_max: 0.01

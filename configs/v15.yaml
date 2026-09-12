@@ -1,0 +1,30 @@
+pipeline: V15_MECHANISM_AWARE_MULTIMODAL
+extends: [data.yaml, validation.yaml]
+modalities:
+  structure: v8_locked_or_compact
+  predicted_bioactivity:
+    encoder: signaturizer_or_pinned_multitask_target_model
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    measured_only_primary: false
+  aging_network:
+    resources: [HAGR_GenAge_genes_only, AgingAtlas, Reactome, GO, STRING]
+    compound_lifespan_outcomes_forbidden: true
+    historical_cutoff: REQUIRED_AT_RUNTIME
+    propagation_alpha: [0.3, 0.5, 0.7]
+  toxicity_adme:
+    frozen_predictors: REQUIRED_AT_RUNTIME
+  transcriptomics:
+    enabled: false
+fusion:
+  projection_dim: [32, 64, 96]
+  types: [concat, gated, hierarchical]
+  modality_dropout: [0.0, 0.1, 0.2, 0.3]
+  heads: [elastic_net, mlp, tabm_mini]
+leakage_audit:
+  scan_direct_longevity_text: true
+  coverage_only_baseline: true
+  measured_vs_predicted_targets: true
+  strict_historical_vs_current: true
+  leave_resource_out: true
+claims:
+  predicted_targets_are_causal: false

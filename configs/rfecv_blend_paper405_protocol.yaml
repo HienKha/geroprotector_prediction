@@ -1,0 +1,78 @@
+schema_version: geroprotector.rfecv_blend_paper405.protocol.v1
+scientific_role: rfecv_feature_selection_on_d1_train_then_equal_thirds_svm_tabpfnv2_tabfm_blend_evaluated_by_nested_cv_holdout_and_externals
+provenance_note: The npj Digital Medicine article is paywalled and could not be read. The accompanying
+  tddi v1.0.0 release performs NO RFECV -- its num_features_to_drop=6 removes six identity columns. This
+  protocol implements the user's explicit specification and does not claim to replicate that paper.
+feature_selection:
+  method: RFECV
+  estimator: SVC(kernel=linear)
+  estimator_C: 1.0
+  estimator_random_state: 42
+  step: 1
+  min_features_to_select: 5
+  cv_folds: 5
+  cv_seed: 42
+  scoring: average_precision
+  forced_retained_features: none
+  nested_inside_cross_validation: true
+  fitted_on_training_rows_only: true
+  candidate_pool: rdkit2d_205_fold_local_imputed
+blend:
+  components:
+  - svm_paper_setting
+  - tabpfn_v2
+  - tabfm
+  weights:
+  - 0.3333333333333333
+  - 0.3333333333333333
+  - 0.3333333333333333
+  weights_selected_from_data: false
+contract:
+  test_or_external_labels_used_for_selection_or_threshold: false
+  threshold_source: nested_rfecv_324_train_oof_mcc
+paper_split:
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+tabfm:
+  repository: https://github.com/google-research/tabfm
+  repository_commit: fbb665569425fd2f490c6576b3af967876fe11ff
+  vendored_path: third_party/tabfm
+  required_package_version: 1.0.1
+  backend: pytorch
+  device: cuda
+  huggingface_repo: google/tabfm-1.0.0-pytorch
+  weights_license: tabfm-non-commercial-v1.0
+  hyperparameters:
+    n_estimators: 4
+    softmax_temperature: 0.9
+    max_num_features: 500
+    max_num_rows: null
+tabpfn_v2:
+  required_package_version: 8.0.8
+  explicit_model_version: V2
+  checkpoint_path: checkpoints/tabpfn-v2-classifier.ckpt
+  checkpoint_sha256: f65a35685aeef42e31b796d9bfa34e68d6fc780bc98e7bff7763802964cf435f
+  device: cuda
+  softmax_temperature: 0.9
+  hyperparameters:
+    n_estimators: 8
+sealed_inputs:
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  eq_thirds_comparison:
+    path: outputs/blend_comparison_svm_tani_v2_bishop_20260819/comparison_metrics.csv
+    sha256: 6a556f2d400d4055342503372acb35af302af7775076639ceef647f24f9c87c7
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

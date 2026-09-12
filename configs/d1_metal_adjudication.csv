@@ -1,0 +1,12 @@
+name,original_smiles,adjudication,retained_representation,note
+Chromium Picolinate,C1=CC=NC(=C1)C(=O)[O-].C1=CC=NC(=C1)C(=O)[O-].C1=CC=NC(=C1)C(=O)[O-].[Cr+3],coordination_formulation_ligand_parent,fragment_parent,"Cr(III) formulation; retained structure represents the organic picolinate ligand and is flagged for sensitivity"
+Euk-134,COC1=CC=CC(=C1[O-])C=NCCN=CC2=C(C(=CC=C2)OC)[O-].[Cl-].[Mn+3],coordination_formulation_ligand_parent,fragment_parent,"Mn formulation; retained structure represents the organic ligand and is flagged for sensitivity"
+Euk-8,C1=CC=C(C(=C1)C=NCCN=CC2=CC=CC=C2[O-])[O-].[Cl-].[Mn+3],coordination_formulation_ligand_parent,fragment_parent,"Mn formulation; retained structure represents the organic ligand and is flagged for sensitivity"
+Sodium Butyrate,CCCC(=O)[O-].[Na+],simple_counterion_salt_parent,fragment_parent,Sodium counterion removed under the locked parent policy
+DIPYRONE,Cc1c(N(C)CS(=O)(=O)[O-])c(=O)n(-c2ccccc2)n1C.O.[Na+],simple_counterion_salt_parent,fragment_parent,Sodium counterion and water removed under the locked parent policy
+BROMFENAC SODIUM,Nc1c(CC(=O)[O-])cccc1C(=O)c1ccc(Br)cc1.Nc1c(CC(=O)[O-])cccc1C(=O)c1ccc(Br)cc1.O.O.O.[Na+].[Na+],simple_counterion_salt_parent,fragment_parent,Sodium counterions and waters removed under the locked parent policy
+SITAXENTAN SODIUM,Cc1cc2c(cc1CC(=O)c1sccc1S(=O)(=O)[N-]c1onc(C)c1Cl)OCO2.[Na+],simple_counterion_salt_parent,fragment_parent,Sodium counterion removed under the locked parent policy
+NOVOBIOCIN SODIUM,CO[C@@H]1[C@@H](OC(N)=O)[C@@H](O)[C@H](Oc2ccc3c([O-])c(NC(=O)c4ccc(O)c(CC=C(C)C)c4)c(=O)oc3c2C)OC1(C)C.[Na+],simple_counterion_salt_parent,fragment_parent,Sodium counterion removed under the locked parent policy
+CERIVASTATIN SODIUM,COCc1c(C(C)C)nc(C(C)C)c(/C=C/[C@@H](O)C[C@@H](O)CC(=O)[O-])c1-c1ccc(F)cc1.[Na+],simple_counterion_salt_parent,fragment_parent,Sodium counterion removed under the locked parent policy
+Ferric nitrilotriacetate,C(C(=O)[O-])N(CC(=O)[O-])CC(=O)[O-].[Fe+3],coordination_formulation_ligand_parent,fragment_parent,"Fe(III) formulation; retained structure represents nitrilotriacetate ligand and is flagged for sensitivity"
+Pentobarbital,CCCC(C)C1(C(=O)NC(=NC1=O)[O-])CC.[Na+],simple_counterion_salt_parent,fragment_parent,Sodium counterion removed under the locked parent policy

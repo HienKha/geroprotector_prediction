@@ -1,0 +1,60 @@
+schema_version: geroprotector.cv5_paper_metrics.protocol.v1
+scientific_role: >-
+  five_fold_cross_validation_on_the_324_d1_training_rows_only,
+  reported_strictly_in_the_source_papers_own_metric_set
+
+contract:
+  train_rows_only: true
+  test_rows_used: false
+  external_rows_used: false
+  oof_selected_thresholds_are_not_used: true
+  parity_atol: 1.0e-12
+  note: >-
+    The project's OOF-MCC thresholds were selected by maximising MCC on these
+    same 324 OOF rows. Scoring the same rows at those thresholds would be
+    optimistically biased, so the primary rule here is a common fixed 0.5, plus
+    the paper SVM's own native SVC.predict() rule refitted per fold.
+
+paper_metric_set:
+  source_repository: https://github.com/BioAgeLab/Geroprotectors-Project-INGER
+  source_commit: c8f458925f5ea2beeba87c7c2dda62eefacf618c
+  source_notebook: 2.SVM_model/SVM_model_CODE.ipynb
+  reported: [accuracy, confusion_matrix, specificity, cohen_kappa]
+  not_reported: [roc_auc, auprc, precision, f1, macro_f1, brier, log_loss]
+  paper_performs_cross_validation: false
+  this_cv_is_an_addition_not_a_reproduction: true
+
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+  note: >-
+    Identical to the fold structure every cross-fitted OOF stream in this
+    repository already uses, so the per-fold predictions are the ones already
+    computed rather than a fresh resampling.
+
+models:
+  - paper_svm
+  - blend_eq_thirds_tabpfnv2
+  - blend_eq_thirds_tabfm
+
+paper_split:
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+
+sealed_inputs:
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  tabfm_train_oof:
+    path: outputs/screeningblend_tabfm_20260821/d1_train_oof_predictions.csv
+    sha256: b65ab9e8ecf45e7965afad1f0214c73734ffb0b20b379b644bb2ed6a982d2121
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

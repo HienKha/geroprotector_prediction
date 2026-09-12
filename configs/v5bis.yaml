@@ -1,0 +1,4 @@
+pipeline: V5BIS_PAPER80
+extends: [v5.yaml, paper80.yaml]
+base_pipeline: V5_ELIXIRFP_REBUILT
+protocol_resolution: V5_unchanged_model_pipeline_on_locked_identity_safe_paper80_holdout

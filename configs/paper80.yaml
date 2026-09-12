@@ -1,0 +1,30 @@
+evaluation_design:
+  name: paper_random_80_20
+  role: retrospective_contextual_only
+  identity_resolution_before_split: true
+  source: v3_1_identity_safe_paper_split
+  source_paper_rows: 405
+  curated_rows: 382
+  train_size: 0.8
+  test_size: 0.2
+  random_state: 42
+  shuffle: true
+  stratify: false
+  expected_train_rows: 305
+  expected_test_rows: 77
+  expected_test_class_counts: {0: 29, 1: 48}
+  test_identity_file: configs/paper80_v3_1_test_identities.txt
+  test_identity_file_sha256: 354c8ffafeb9d404d672077937fae60ae26de3034a6909a5fea98263261b08f4
+  inner_selection:
+    folds: 3
+    group_unit: primary_similarity_component
+    assignment_seed: 142
+  outer_test_used_for_selection: false
+  outer_test_used_for_calibration: false
+  headline_eligible: false
+  replaces_grouped_primary_validation: false
+
+paper_registry_outputs:
+  outer: artifacts/paper80_splits/paper80_registry.parquet
+  inner: artifacts/paper80_splits/paper80_inner_registry.parquet
+  manifest: artifacts/paper80_splits/paper80_split_manifest.json

@@ -1,0 +1,79 @@
+schema_version: geroprotector.screening_blend_ablation.protocol.v2
+scientific_role: post_lock_exact_published_svm_component_ablation_and_applicability
+
+locked_model:
+  components: [paper_svm, tanimoto_svc, tabpfn_v2]
+  blend_weights: [0.10, 0.60, 0.30]
+  component_state_sha256: a5f65756c180b3338bf9a647fdea35b97a954662137a320bbea3606d4d04ba1e
+  blend_oof_mcc_threshold: 0.5299579802368826
+  fixed_threshold: 0.5
+
+paper_svm_contract:
+  primary_authority: official_executable_notebook_and_reported_test_result
+  official_repository: https://github.com/BioAgeLab/Geroprotectors-Project-INGER
+  official_repository_commit: c8f458925f5ea2beeba87c7c2dda62eefacf618c
+  official_notebook: 2.SVM_model/SVM_model_CODE.ipynb
+  official_notebook_sha256: 5ece7ee3ef3ffa74393e517d02bc0c588905219ce43c522444a84f8a4c4ab275
+  features:
+    - Total Molweight
+    - cLogP
+    - H-Acceptors
+    - H-Donors
+    - Total Surface Area
+    - Relative PSA
+    - Rotatable Bonds
+  preprocessing: none_matching_official_notebook_and_reported_accuracy
+  kernel: linear
+  C: 1.0
+  gamma: 1.0
+  gamma_has_no_effect_for_linear_kernel: true
+  probability: true
+  probability_role: ranking_and_blend_probability_only
+  random_state: 42
+  native_decision_rule: svc_predict_decision_function_zero
+  expected_official_test_result:
+    n_test: 81
+    accuracy: 0.6790123456790124
+    confusion_tn_fp_fn_tp: [30, 5, 21, 25]
+  manuscript_scaled_wording_conflicts_with_executable_notebook: true
+  scaled_text_interpretation_role: sensitivity_only_not_locked_blend
+  external_labels_used_for_fit_or_decision_rule: false
+
+sealed_inputs:
+  weighted_completed:
+    path: outputs/weightedblend405_20260817/COMPLETED.json
+    sha256: f3daabf59f937ddae9e3f470eced0ae80f0baaa66972ac66cb7d88e8123b468c
+  screening_completed:
+    path: outputs/screeningblend405_20260817/COMPLETED.json
+    sha256: 7477cc4569b4143c5355483dfe7812cdf530dbd082cdd9e98bd15f9faa66891a
+  external_completed:
+    path: outputs/screeningblend_external_20260817/COMPLETED.json
+    sha256: e25c04e075a25f73091dc34e48441e72f107e9c45e8aad7e30b5e530cf59a6a8
+  external_protocol:
+    path: configs/screening_blend_external_protocol.yaml
+    sha256: 35ee662d3e2ee0c012c7df700c1993993724e54e7ebbb5c93729f43c8eb7d2f7
+
+threshold_analysis:
+  primary_ranking_metrics: [auprc_average_precision_positive, auroc, brier]
+  component_binary_threshold_source: paper_svm_native_decision_other_components_d1_train_oof_mcc
+  common_fixed_0p5_sensitivity: true
+  external_labels_may_select_or_change_threshold: false
+
+applicability:
+  similarity: morgan_radius2_2048bit_tanimoto_to_locked_d1_train
+  threshold: 0.40
+  outside_rule: maximum_tanimoto_lt_0p40
+  threshold_selected_without_test_or_external_labels: true
+  use_as_exclusion_filter: false
+  evaluate_cohorts: [d1_paper_test, drugage, agextend]
+
+paired_bootstrap:
+  resamples: 10000
+  seed: 20260818
+  confidence_level: 0.95
+  primary_drugage_endpoint: significant_positive_retrieval_background_not_certified_negative
+  sampling_schemes:
+    - stratified_parent_connectivity_compound
+    - publication_compound_union_cluster_sensitivity
+  age_extend_formal_inference_allowed: false
+  external_results_may_change_locked_model: false

@@ -1,0 +1,23 @@
+{
+  "schema_version": "geroprotector.protocol_lock.v1",
+  "contracts": {
+    "data": "bf4c8b5d36c93cb15ca1be86ab04ae0baeca61531626fca52f70172847d59e90",
+    "validation": "7ddce52c0616bf3faf3a0596a0487ed488e6820c6a1c22976eb2dbccae2dd753",
+    "paper80": "9c34696d5efdf7be5490a19b8a6bac4a99f5037326d5f406587da0d88caf1b9b",
+    "reference": "2e1459fb043ec217cba29a30c3c4962784472df245088c599ffb7382a51a4cb9",
+    "v5": "9e6edc49344de60e177d9bb4ab133b91edcfb99edb94940d6fd363f886025797",
+    "v6": "88d78817c8f982412e114ead1b53471946dff4bc8634874c754c74975f50f0e4",
+    "v5bis": "435f5c3398b8f211412f26d2657474049ce29cbd4e7a94a72971fd3c650ee1f3",
+    "v6bis": "819e885e613e8d798bb9f536b1c07966c03620a3fceeafed0b6814172725f61d"
+  },
+  "runtime_redactions": {
+    "v6": [
+      "checkpoint_path",
+      "checkpoint_sha256",
+      "license_path",
+      "license_sha256",
+      "checkpoint_source",
+      "access_date_utc"
+    ]
+  }
+}

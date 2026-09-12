@@ -1,0 +1,120 @@
+schema_version: geroprotector.blend7feat_paper_descriptors.protocol.v1
+scientific_role: equal_thirds_blends_with_slot3_restricted_to_the_papers_seven_datawarrior_descriptors_instead_of_the_rdkit2d_panel
+design:
+  slot3_feature_panel: paper_7_datawarrior_descriptors
+  slot3_models:
+  - tabpfn_v2
+  - tabfm
+  - bishop
+  - tabm
+  paper_svm_unchanged: true
+  tanimoto_keeps_morgan_fingerprints: true
+  weights:
+  - 0.3333333333333333
+  - 0.3333333333333333
+  - 0.3333333333333333
+  rationale: Tanimoto/Jaccard is defined on binary sets and is not meaningful over seven continuous descriptors,
+    so it retains Morgan r2/2048. The single manipulated variable is therefore the slot-3 feature panel.
+contract:
+  chemistry_components_are_not_refitted: true
+  parity_atol: 1.0e-12
+  external_cohorts_used: false
+  threshold_rule: fixed_0p5_for_every_model_no_selection
+paper_split:
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+altmodels:
+  alt_model_training:
+    seed_ensemble:
+    - 0
+    - 1
+    - 2
+    inner_validation_fraction: 0.2
+    inner_validation_stratified: true
+    early_stopping_metric: inner_validation_cross_entropy
+    early_stopping_patience: 30
+    max_epochs: 200
+    batch_size: 64
+    device: cuda
+    inner_validation_rows_come_only_from_the_current_fit_set: true
+  alt_models:
+    bishop:
+      source: BiSHop_ICML2024_reference_implementation
+      vendored_path: third_party/bishop
+      vendored_sha256:
+        models/attn.py: 0e77596d85c755556172d64c6246a11e6dc9910fa2231df58195508b236220c7
+        models/decoder.py: 4eb0ec0c97ad7a16e4072c579068f6b6881273c4a6a34b05ddb8f368b1dbd821
+        models/embed.py: 6ebbef725304707d51daed478979f37801a60341fd23518ba8771be95d0a214a
+        models/encoder.py: 8e5ab6fa32379986bc922504b1e045dfe54cafe9908fa31b14d6e657225ab792
+        models/entmax.py: 326748522967f74bd46b605f0ee3dc5fc0233b92e4584ead19bbce0330fcd2a4
+        models/model.py: 648047201bbc989298d1a3fc7a0d602eadfb02957168a3d5aced7c9a37ab96b6
+        models/module.py: fe2d54218bfa1ef33e627e90a645edb6a55a292974a0951da258ebfac25d42d5
+      hyperparameters:
+        emb_dim: 32
+        out_dim: 24
+        patch_dim: 8
+        factor: 10
+        n_agg: 4
+        actv: entmax
+        hopfield: true
+        d_model: 128
+        d_ff: 256
+        n_heads: 4
+        e_layer: 2
+        d_layer: 3
+        dropout: 0.2
+        emb_dropout: 0.1
+        mlp_dropout: 0.2
+        mlp_hidden: []
+        mlp_skip: false
+        learning_rate: 0.0001
+        weight_decay: 0.0001
+    tabm:
+      source: tabm_pypi_package
+      required_package_version: 0.0.3
+      hyperparameters:
+        arch_type: tabm
+        k: 32
+        n_blocks: 3
+        d_block: 256
+        dropout: 0.1
+        start_scaling_init: random-signs
+        learning_rate: 0.001
+        weight_decay: 0.0001
+tabfm:
+  repository: https://github.com/google-research/tabfm
+  repository_commit: fbb665569425fd2f490c6576b3af967876fe11ff
+  vendored_path: third_party/tabfm
+  required_package_version: 1.0.1
+  backend: pytorch
+  device: cuda
+  huggingface_repo: google/tabfm-1.0.0-pytorch
+  weights_license: tabfm-non-commercial-v1.0
+  hyperparameters:
+    n_estimators: 4
+    softmax_temperature: 0.9
+    max_num_features: 500
+    max_num_rows: null
+tabpfn_v2:
+  required_package_version: 8.0.8
+  explicit_model_version: V2
+  checkpoint_path: checkpoints/tabpfn-v2-classifier.ckpt
+  checkpoint_sha256: f65a35685aeef42e31b796d9bfa34e68d6fc780bc98e7bff7763802964cf435f
+  device: cuda
+  softmax_temperature: 0.9
+  hyperparameters:
+    n_estimators: 8
+sealed_inputs:
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

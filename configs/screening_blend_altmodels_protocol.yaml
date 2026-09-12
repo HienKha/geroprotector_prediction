@@ -1,0 +1,195 @@
+schema_version: geroprotector.screening_blend_altmodels.protocol.v1
+scientific_role: >-
+  equal_weight_three_component_screening_blend_in_which_the_tabular_foundation_model
+  slot_is_replaced_by_bishop_tabm_or_tabnet
+
+# The two chemistry components are byte-identical to the sealed locked run.  Only the
+# third slot changes.  Every alternative blend is fitted on the 324 D1 paper-training
+# rows, its decision threshold is selected from 324-row cross-fitted OOF only, and the
+# 81 D1 test rows, DrugAge and AgeXtend are scored once afterwards.
+blend:
+  components: [paper_svm, tanimoto_svc, alt_model]
+  weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+  weights_are_prespecified_equal_thirds: true
+  weights_selected_from_data: false
+  alt_models: [bishop, tabm, tabnet]
+  primary_threshold_source: full_324_d1_train_cross_fitted_oof_mcc
+  secondary_fixed_threshold: 0.5
+  test_or_external_labels_used_for_fit_weight_or_threshold: false
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+features:
+  paper_descriptors:
+    - Total Molweight
+    - cLogP
+    - H-Acceptors
+    - H-Donors
+    - Total Surface Area
+    - Relative PSA
+    - Rotatable Bonds
+  morgan_radius: 2
+  morgan_bits: 2048
+  rdkit2d_max_features: 500
+  alt_model_feature_panel: rdkit2d_median_imputed_variance_filtered_same_as_tabpfn_slot
+  alt_model_scaler: quantile_transformer_normal_fitted_on_fit_rows_only
+
+components:
+  cross_fitted_oof_folds: 5
+  cross_fitted_oof_seed: 42
+  tanimoto_svc:
+    C: 1.0
+    fixed_logistic_of_decision: true
+  paper_svm:
+    kernel: linear
+    C: 1.0
+    gamma: 1.0
+    probability: true
+    random_state: 42
+    preprocessing: none_matching_public_notebook
+    native_decision_rule: svc_predict_decision_function_zero
+
+alt_model_training:
+  seed_ensemble: [0, 1, 2]
+  inner_validation_fraction: 0.2
+  inner_validation_stratified: true
+  early_stopping_metric: inner_validation_cross_entropy
+  early_stopping_patience: 30
+  max_epochs: 200
+  batch_size: 64
+  device: cuda
+  inner_validation_rows_come_only_from_the_current_fit_set: true
+
+alt_models:
+  bishop:
+    source: BiSHop_ICML2024_reference_implementation
+    vendored_path: third_party/bishop
+    vendored_sha256:
+      models/attn.py: 0e77596d85c755556172d64c6246a11e6dc9910fa2231df58195508b236220c7
+      models/decoder.py: 4eb0ec0c97ad7a16e4072c579068f6b6881273c4a6a34b05ddb8f368b1dbd821
+      models/embed.py: 6ebbef725304707d51daed478979f37801a60341fd23518ba8771be95d0a214a
+      models/encoder.py: 8e5ab6fa32379986bc922504b1e045dfe54cafe9908fa31b14d6e657225ab792
+      models/entmax.py: 326748522967f74bd46b605f0ee3dc5fc0233b92e4584ead19bbce0330fcd2a4
+      models/model.py: 648047201bbc989298d1a3fc7a0d602eadfb02957168a3d5aced7c9a37ab96b6
+      models/module.py: fe2d54218bfa1ef33e627e90a645edb6a55a292974a0951da258ebfac25d42d5
+    hyperparameters:
+      emb_dim: 32
+      out_dim: 24
+      patch_dim: 8
+      factor: 10
+      n_agg: 4
+      actv: entmax
+      hopfield: true
+      d_model: 128
+      d_ff: 256
+      n_heads: 4
+      e_layer: 2
+      d_layer: 3
+      dropout: 0.2
+      emb_dropout: 0.1
+      mlp_dropout: 0.2
+      mlp_hidden: []
+      mlp_skip: false
+      learning_rate: 0.0001
+      weight_decay: 0.0001
+  tabm:
+    source: tabm_pypi_package
+    required_package_version: 0.0.3
+    hyperparameters:
+      arch_type: tabm
+      k: 32
+      n_blocks: 3
+      d_block: 256
+      dropout: 0.1
+      start_scaling_init: random-signs
+      learning_rate: 0.001
+      weight_decay: 0.0001
+  tabnet:
+    source: pytorch_tabnet_pypi_package
+    required_package_version: 4.1.0
+    hyperparameters:
+      n_d: 8
+      n_a: 8
+      n_steps: 3
+      gamma: 1.3
+      n_independent: 2
+      n_shared: 2
+      lambda_sparse: 0.001
+      learning_rate: 0.02
+      virtual_batch_size: 32
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+# Every path below is opened read-only.  The run refuses to start if any byte differs.
+sealed_inputs:
+  weighted_completed:
+    path: outputs/weightedblend405_20260817/COMPLETED.json
+    sha256: f3daabf59f937ddae9e3f470eced0ae80f0baaa66972ac66cb7d88e8123b468c
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  screening_completed:
+    path: outputs/screeningblend405_20260817/COMPLETED.json
+    sha256: 7477cc4569b4143c5355483dfe7812cdf530dbd082cdd9e98bd15f9faa66891a
+  screening_model_lock:
+    path: outputs/screeningblend405_20260817/models/MODEL_LOCK.json
+    sha256: 1dad2fc8a8bfbab2a4c9c10070cd3b0d9b09f34d4c245914ff573f1ac9433a1a
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  external_completed:
+    path: outputs/screeningblend_external_20260817/COMPLETED.json
+    sha256: e25c04e075a25f73091dc34e48441e72f107e9c45e8aad7e30b5e530cf59a6a8
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  ablation_completed:
+    path: outputs/screeningblend_ablation_papersvm_20260818/COMPLETED.json
+    sha256: dc264cd26dd3a61dc84045a6e3272c4d14ce6a044c58f4b72ebaa6fb4cebcee8
+  ablation_d1_metrics:
+    path: outputs/screeningblend_ablation_papersvm_20260818/d1_component_metrics.csv
+    sha256: b027b9f9e97db6197beb6cf93f36d195935e43a4129dbe54943719de9e86dbff
+  ablation_external_metrics:
+    path: outputs/screeningblend_ablation_papersvm_20260818/external_component_metrics.csv
+    sha256: 92fb7942f8a495c9435a3dace6aafbc0540e80706442b9cca21deb909902174e
+  ablation_thresholds:
+    path: outputs/screeningblend_ablation_papersvm_20260818/component_thresholds.csv
+    sha256: 0ff30446006f247a013b12c7da0275cd5c17a000b8dae9f87bccb476e4ef5917
+
+parity_contract:
+  rebuilt_paper_svm_and_tanimoto_streams_must_match_sealed_run: true
+  parity_atol: 1.0e-12
+  rebuilt_rdkit2d_context_must_equal_sealed_tabpfn_context: true
+  rebuilt_morgan_bits_must_equal_sealed_tanimoto_train_bits: true
+
+endpoints:
+  d1_paper_test: held_out_81_row_paper_split
+  drugage: significant_positive_retrieval_background_not_certified_negative
+  agextend: published_independent_table6_binary
+  drugage_background_is_certified_negative: false
+  agextend_negative_class_too_small_for_formal_inference: true
+
+applicability:
+  similarity: morgan_radius2_2048bit_tanimoto_to_locked_d1_train
+  threshold: 0.40
+  outside_rule: maximum_tanimoto_lt_0p40
+  use_as_exclusion_filter: false
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

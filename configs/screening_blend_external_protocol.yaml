@@ -1,0 +1,68 @@
+schema_version: geroprotector.screening_blend_external.protocol.v2
+status: locked_public_retrospective_stress_test
+model_lock: outputs/screeningblend405_20260817/models/MODEL_LOCK.json
+model_weights: [0.10, 0.60, 0.30]
+decision_thresholds: [0.5299579802368826, 0.5]
+threshold_reoptimization_on_external: forbidden
+
+sources:
+  d1_positive:
+    role: locked D1 reported-positive source
+    path: external_data/source_benchmark/geroprotectors_reported.tsv
+    sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  d1_negative:
+    role: locked D1 weak-reference-negative source
+    path: external_data/source_benchmark/no_geroprotectors_and_toxicos.csv
+    sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  drugage_raw:
+    role: DrugAge Build 5 observation table
+    path: external_data/drugage_build5/drugage.csv
+    sha256: 7ed9771440fa4e1e30be0d3c8e92d919254b572ab40c81e2440ba78c885401d4
+  drugage_mapping:
+    role: pinned PubChem name-to-structure mapping
+    path: external_data/drugage_build5/drugage_pubchem_smiles.csv
+    sha256: b0423bcba991e3a1de2a5c0f7d67fdfdbb1def5a74d11128b292493ad0b4dba2
+  agextend_external_table:
+    role: AgeXtend Supplementary Table 6 independent dataset
+    path: external_data/agextend_2024/43587_2024_763_MOESM2_ESM.xlsx
+    sha256: 3b7d05617bc415c8f70d7ffb37af4f63a14a8440990f37b7aa26bf7816f4ffb2
+
+datawarrior:
+  version: 5.5.0
+  datawarrior_repository: tools/datawarrior_v550
+  datawarrior_commit: e808f499451a4cbe5f7cd935c62cba9e15111c86
+  openchemlib_jar: tools/datawarrior_v550/lib/openchemlib.jar
+  jar_sha256: e32b915293fc798a19c599050c849f8255338709cdb7053d56efa95df206ac64
+  jdk_root: tools/datawarrior_java11
+  java_source: tools/datawarrior_descriptor_cli/DataWarriorDescriptors.java
+  exact_d1_parity_rows: 405
+  exact_d1_parity_columns: 7
+  ozone_import_representation: O=O=O
+
+preparation:
+  unit: parent_connectivity_compound
+  exclude_all_405_d1_parent_or_normalized_name_overlaps: true
+  exclude_multi_component_salts_mixtures_and_unadjudicated_formulations: true
+  exclude_metals_and_coordination_compounds: true
+  deterministic_deduplication_before_prediction: true
+  provider_outcomes_are_public_and_co_located: true
+  outcome_columns_may_enter_feature_or_prediction_code: false
+
+outcomes:
+  drugage_retrieval_positive: significant_average_lifespan_increase
+  drugage_retrieval_background_is_certified_negative: false
+  drugage_positive_clean: at_least_one_significant_increase_and_no_significant_decrease
+  drugage_negative_clean: all_average_effects_nonincrease_no_significant_direction_and_at_least_two_publications
+  drugage_uncertain_excluded_from_strict_binary: true
+  agextend_label: provider_Supplementary_Table_6_Label
+  agextend_Anti_Aging_Status_is_outcome: false
+
+evaluation:
+  random_external_split: false
+  refit_calibration_or_threshold_selection: false
+  score_both_locked_thresholds: true
+  bootstrap_resamples: 2000
+  bootstrap_seed: 20260817
+  publication_compound_union_geometry_required: true
+  role: published_retrospective_post_hoc_stress_test
+  fresh_confirmatory_claim_allowed: false

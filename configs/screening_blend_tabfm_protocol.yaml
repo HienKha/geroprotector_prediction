@@ -1,0 +1,95 @@
+schema_version: geroprotector.screening_blend_tabfm.protocol.v1
+scientific_role: >-
+  equal_thirds_svm_tanimoto_tabfm_blend_under_the_locked_paper405_protocol,
+  first_evaluation_of_google_research_tabfm_in_this_project
+
+# Same construction as screening_blend_altmodels (BiSHop/TabM/TabNet), so the
+# numbers are directly comparable to those and to the sealed TabPFN-v2
+# equal-thirds anchor. Only the third slot changes.
+blend:
+  components: [paper_svm, tanimoto_svc, tabfm]
+  weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+  weights_are_prespecified_equal_thirds: true
+  weights_selected_from_data: false
+  primary_threshold_source: full_324_d1_train_cross_fitted_oof_mcc
+  secondary_fixed_threshold: 0.5
+  test_or_external_labels_used_for_fit_weight_or_threshold: false
+
+tabfm:
+  repository: https://github.com/google-research/tabfm
+  repository_commit: fbb665569425fd2f490c6576b3af967876fe11ff
+  vendored_path: third_party/tabfm
+  required_package_version: 1.0.1
+  backend: pytorch
+  device: cuda
+  huggingface_repo: google/tabfm-1.0.0-pytorch
+  # Apache-2.0 source; weights are separately licensed and NOT free for
+  # commercial or production use. Academic evaluation/publication is in scope.
+  weights_license: tabfm-non-commercial-v1.0
+  hyperparameters:
+    # Library defaults, deliberately untuned -- matching how TabPFN v2 is used in
+    # the sealed runs (defaults, no per-dataset search). The Optuna experiment
+    # already showed tuning does not beat defaults at n=324.
+    n_estimators: 4
+    softmax_temperature: 0.9
+    max_num_features: 500      # > 205 retained descriptors => no feature subsampling
+    max_num_rows: null         # null => every context row used (no row subsampling)
+
+features:
+  alt_model_feature_panel: rdkit2d_median_imputed_variance_filtered_same_as_tabpfn_slot
+  note: >-
+    TabFM sees the exact panel the TabPFN slot saw (217 raw RDKit2D descriptors ->
+    205 after fold-local median imputation and variance filtering), so the
+    comparison isolates the model rather than the features. TabFM applies its own
+    internal preprocessing on top; no external scaler is added.
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+endpoints:
+  d1_paper_test: paper_binary
+  drugage: significant_positive_retrieval_background_not_certified_negative
+  agextend: published_independent_table6_binary
+
+sealed_inputs:
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  eq_thirds_comparison:
+    path: outputs/blend_comparison_svm_tani_v2_bishop_20260819/comparison_metrics.csv
+    sha256: 6a556f2d400d4055342503372acb35af302af7775076639ceef647f24f9c87c7
+  altmodels_metrics:
+    path: outputs/screeningblend_altmodels_20260819/metrics_all.csv
+    sha256: 3e16bdd9357be2757adcb288971fb3a394077790923d2e396fa352aed202c11f
+
+parity_contract:
+  rebuilt_paper_svm_and_tanimoto_streams_must_match_sealed_run: true
+  parity_atol: 1.0e-12
+  rebuilt_rdkit2d_context_must_equal_sealed_tabpfn_context: true
+  rebuilt_morgan_bits_must_equal_sealed_tanimoto_train_bits: true
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

@@ -1,0 +1,80 @@
+schema_version: geroprotector.blend_xai_v2.protocol.v1
+scientific_role: >-
+  corrected_post_lock_descriptive_explainability_for_the_locked_010_060_030_blend,
+  fixing_four_overclaims_identified_in_external_review
+
+# This run supersedes blend_xai_20260820.  Corrections:
+#  1. paired bootstrap CIs for weighted-vs-equal-thirds on train OOF
+#  2. decomposition reported at three explicit levels; final probability is NOT
+#     additively attributable because of Platt/expit sigmoids
+#  3. per-compound component decomposition before attributing any bias
+#  4. applicability domain reported prevalence-adjusted, multi-cutoff, with CIs
+analysis_contract:
+  locked_model_is_refit_or_reweighted: false
+  threshold_is_changed: false
+  test_or_external_labels_used_to_build_explanations: false
+  all_results_are_post_lock_descriptive: true
+  explained_model: blend_010_060_030
+  locked_threshold: 0.5299579802368826
+  bootstrap_refits_are_training_only_diagnostics: true
+
+decomposition_scale:
+  component_level_raw_blend: exact_100pct_of_weight
+  within_component_margin: exact_margin_space_only_70pct_of_weight
+  final_probability: not_additively_attributable_platt_and_expit_sigmoid
+
+applicability:
+  similarity: morgan_radius2_2048bit_tanimoto_to_locked_d1_train
+  tanimoto_cutoffs: [0.30, 0.40, 0.50, 0.60]
+  report_prevalence_adjusted_ap: true
+  report_bootstrap_ci: true
+  coverage_performance_curve: true
+  note: >-
+    AP baseline equals subgroup prevalence, so raw AP is not comparable across
+    strata; AP-minus-prevalence and AUROC are reported alongside.
+
+chemical_classes:
+  prespecified_before_inspecting_class_results: true
+  aliphatic_hydroxyl_smarts: "[CX4][OX2H]"
+  aromatic_hydroxyl_smarts: "[c][OX2H]"
+  carboxylic_acid_smarts: "[CX3](=O)[OX2H1]"
+  polyol_sugar_like_min_aliphatic_oh: 3
+  polyphenol_like_min_aromatic_oh: 2
+  role: post_hoc_error_analysis_not_candidate_discovery
+
+stability:
+  coefficient_subsamples: 200
+  subsample_fraction: 0.8
+  method: subsample_without_replacement
+  rationale: >-
+    Resampling WITH replacement duplicates rows and makes libsvm converge
+    pathologically slowly on the unscaled DataWarrior descriptors; capping
+    max_iter instead yields non-converged coefficients. Subsampling avoids both
+    and every refit uses libsvm default unlimited iterations.
+  nonconverged_refits_are_a_hard_error: true
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+sealed_inputs:
+  screening_bundle:
+    path: outputs/screeningblend405_20260817/models/blend_010_060_030_oof_mcc.joblib
+    sha256: 5b57f6d214a99678c838ed36a0998965f2331a483fd8fb9b97acab8d0b4726c7
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

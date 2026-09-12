@@ -1,0 +1,78 @@
+schema_version: geroprotector.fixed_blend_paper405.protocol.v1
+scientific_role: exact_raw_row_paper_holdout_contextual_fixed_blend
+headline_eligible: false
+
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+  expected_rows: 405
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+features:
+  paper_descriptors:
+    - Total Molweight
+    - cLogP
+    - H-Acceptors
+    - H-Donors
+    - Total Surface Area
+    - Relative PSA
+    - Rotatable Bonds
+  morgan_radius: 2
+  morgan_bits: 2048
+  rdkit2d_max_features: 500
+
+components:
+  cross_fitted_oof_folds: 5
+  cross_fitted_oof_seed: 42
+  extra_trees:
+    n_estimators: 1000
+    max_features: sqrt
+    min_samples_leaf: 1
+    class_weight: balanced
+    random_state: 42
+    n_jobs: 1
+  tanimoto_svc:
+    C: 1.0
+    fixed_logistic_of_decision: true
+  paper_svm:
+    kernel: linear
+    C: 1.0
+    gamma: 1.0
+    probability: true
+    random_state: 42
+    preprocessing: none_matching_public_notebook
+  tabpfn_v2:
+    required_package_version: 8.0.8
+    checkpoint_path: checkpoints/tabpfn-v2-classifier.ckpt
+    checkpoint_sha256: f65a35685aeef42e31b796d9bfa34e68d6fc780bc98e7bff7763802964cf435f
+    model_version: v2
+    device: cuda
+    singleton_inference: true
+    repeat_atol: 0.000001
+    telemetry_disabled: true
+
+blends:
+  sota_fixed_blend_original:
+    components: [extra_trees, tanimoto_svc, tabpfn_v2]
+    weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+  sota_fixed_blend_plus_svm:
+    components: [extra_trees, tanimoto_svc, tabpfn_v2, paper_svm]
+    weights: [0.25, 0.25, 0.25, 0.25]
+  sota_fixed_blend_svm_replaces_extratrees:
+    components: [paper_svm, tanimoto_svc, tabpfn_v2]
+    weights: [0.3333333333333333, 0.3333333333333333, 0.3333333333333333]
+
+evaluation:
+  threshold_selection: cross_fitted_oof_on_324_paper_train
+  threshold_metric: mcc
+  calibration: none
+  outer_test_used_for_components_or_weights: false
+  outer_test_used_for_threshold: false
+  hagr_loaded: false

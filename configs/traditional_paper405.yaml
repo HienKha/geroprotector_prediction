@@ -1,0 +1,125 @@
+schema_version: geroprotector.traditional_paper405.protocol.v1
+scientific_role: exact_raw_row_paper_holdout_contextual_benchmark
+headline_eligible: false
+
+source_paper:
+  title: Structure-based machine learning screening identifies natural product candidates as potential geroprotectors
+  doi: 10.1186/s13321-025-01058-5
+  repository: https://github.com/BioAgeLab/Geroprotectors-Project-INGER
+  repository_commit: c8f458925f5ea2beeba87c7c2dda62eefacf618c
+  official_concatenated_csv_sha256: a42ecba270d2e11e308fce6ad682d15a786e2efc89bf913495b34b61e1758f6c
+
+sources:
+  positive:
+    expected_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+    expected_rows: 206
+    delimiter: tab
+    encoding: latin-1
+  negative:
+    expected_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+    expected_rows: 199
+    delimiter: comma
+    encoding: latin-1
+  expected_total_rows: 405
+  expected_positive_rows: 206
+  expected_negative_rows: 199
+  canonical_seven_descriptor_dataset_sha256: d1a7329fc31dc61349ac115cbb3ca85e622c6eebb2a1e8831b188f8b0681e4aa
+
+features:
+  - Total Molweight
+  - cLogP
+  - H-Acceptors
+  - H-Donors
+  - Total Surface Area
+  - Relative PSA
+  - Rotatable Bonds
+
+split:
+  implementation: sklearn.model_selection.train_test_split
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_train_rows: 324
+  expected_test_rows: 81
+  expected_train_class_0: 164
+  expected_train_class_1: 160
+  expected_test_class_0: 35
+  expected_test_class_1: 46
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+
+evaluation:
+  decision_threshold: 0.5
+  threshold_selected_on_test: false
+  model_selection_on_test: false
+  calibration: none
+  positive_class: 1
+  auprc_definition: sklearn_average_precision
+
+models:
+  extra_trees:
+    n_estimators: 1000
+    criterion: gini
+    random_state: 42
+    n_jobs: 1
+  random_forest:
+    n_estimators: 1000
+    criterion: gini
+    random_state: 42
+    n_jobs: 1
+  xgboost:
+    n_estimators: 500
+    max_depth: 3
+    learning_rate: 0.05
+    subsample: 0.8
+    colsample_bytree: 0.8
+    objective: binary:logistic
+    eval_metric: logloss
+    random_state: 42
+    n_jobs: 1
+  catboost:
+    required_version: 1.2.10
+    iterations: 500
+    depth: 6
+    learning_rate: 0.05
+    loss_function: Logloss
+    random_seed: 42
+    thread_count: 1
+  lightgbm:
+    required_version: 4.6.0
+    n_estimators: 500
+    num_leaves: 31
+    learning_rate: 0.05
+    random_state: 42
+    n_jobs: 1
+  logistic_regression:
+    preprocessing: standard_scaler_fit_on_train_only
+    C: 1.0
+    solver: liblinear
+    max_iter: 5000
+    random_state: 42
+  linear_regression:
+    estimator: sklearn_linear_regression_ols
+    ranking_score: raw_continuous_prediction
+    probability_for_brier: clip_to_0_1
+    decision_threshold: 0.5
+  knn:
+    preprocessing: standard_scaler_fit_on_train_only
+    n_neighbors: 27
+    weights: uniform
+    metric: minkowski
+    p: 2
+  svm_original_paper:
+    preprocessing: none_matching_public_notebook
+    kernel: linear
+    C: 1.0
+    gamma: 1.0
+    probability: true
+    random_state: 42
+
+claim_boundaries:
+  - Only SVM and KNN settings are direct paper settings; the other seven models are prespecified extensions.
+  - The public notebook leaves SVM descriptors unscaled despite manuscript wording that data were scaled; executable-notebook behavior is used here.
+  - KNN is fixed at the manuscript-reported k=27; the public notebook's test-set search over k is not repeated.
+  - Raw source rows and the original random split can contain duplicate or related chemistry across train and test.
+  - Source role is perfectly confounded with the observed label, and negatives are weak absence-of-report references.
+  - This is neither external validation nor headline evidence.

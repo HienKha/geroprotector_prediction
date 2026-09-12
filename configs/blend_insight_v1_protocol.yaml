@@ -1,0 +1,27 @@
+schema_version: geroprotector.blend_insight_v1.protocol.v1
+scientific_role: stratified_error_analysis_evidence_strength_drug_likeness_scaffolds
+contract:
+  any_model_is_refitted: false
+  fixed_threshold: 0.5
+  labels_used_only_as_stratified_outcome: true
+paper_split:
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+sources:
+  positive_sha256: 41cc8451d80b9aec09574842e4c7007132d68cd613436460b2a784154f609e74
+  negative_sha256: 396f78e7546d76529c808abb01d02da617da92c3d4aed83551901cc3ffd09c14
+sealed_inputs:
+  quad_d1_test:
+    path: outputs/quad_blend_20260822/predictions_d1_test.csv
+    sha256: 07b9eeb9d20b3a3f5381fe8f8bcce191a77a2a830835c6718f1d4b8dfb4542e0
+  quad_drugage:
+    path: outputs/quad_blend_20260822/predictions_drugage.csv
+    sha256: b0da780cd3ae12fa66ef9b2a6223cd36c79d2e183e6540f7a64665887da1dbec
+  quad_agextend:
+    path: outputs/quad_blend_20260822/predictions_agextend.csv
+    sha256: 746c276d6342a807ffa24a20be93b0462f935bbfd2e12300003af879e765fff5
+  drugage_raw:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true

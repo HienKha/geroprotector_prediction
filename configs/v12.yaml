@@ -1,0 +1,26 @@
+pipeline: V12_PU_NOISY_LABEL
+extends: [data.yaml, validation.yaml]
+data_roles:
+  reported_positive: P
+  weak_chembl_reference: U_small
+  prior_ml_candidates: U_prior_selected_optional
+  broad_random_library: U_random_recommended
+models: [elastic_net, small_mlp, tabm_mini, frozen_v8_head, optional_graph]
+pu_objectives: [nnPU, pu_pairwise_ranking]
+class_prior:
+  small_pool_grid: [0.10, 0.20, 0.30, 0.40, 0.50]
+  broad_library_grid: [0.001, 0.005, 0.01, 0.02, 0.05, 0.10]
+  estimate_methods: [KM, AlphaMax, TIcE]
+  external_tuning_forbidden: true
+confident_negatives:
+  enabled: true
+  cross_fitted_only: true
+  probability_max: [0.01, 0.025, 0.05, 0.10]
+  minimum_repeat_agreement: [0.8, 1.0]
+  remaining_unlabeled_weight: [0.1, 0.25, 0.5]
+robustness_simulation:
+  hidden_positive_fraction: [0.10, 0.20, 0.30, 0.50]
+outputs:
+  report_compatibility_metrics: true
+  report_rank_stability: true
+  call_score_biological_probability: false

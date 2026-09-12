@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/geroprotector/schemas/claims_allowed.schema.json",
+  "title": "Evidence-to-claim registry",
+  "description": "A machine-readable firewall preventing predictive evidence from being rewritten as causal or therapeutic proof.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["pipeline_id", "evidence_level", "allowed_claims", "forbidden_claims", "required_qualifiers", "causal_language_allowed", "human_efficacy_language_allowed", "source_label_confounding_must_be_disclosed"],
+  "properties": {
+    "pipeline_id": {"type": "string"},
+    "evidence_level": {
+      "type": "string",
+      "enum": [
+        "internal_grouped_validation",
+        "internal_paper_holdout_contextual",
+        "retrospective_external_origin",
+        "untouched_temporal_external",
+        "blinded_prospective_in_vitro",
+        "blinded_prospective_organism",
+        "replicated_multisite"
+      ]
+    },
+    "allowed_claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "forbidden_claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "required_qualifiers": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "causal_language_allowed": {"type": "boolean", "const": false},
+    "human_efficacy_language_allowed": {"type": "boolean", "const": false},
+    "source_label_confounding_must_be_disclosed": {"type": "boolean", "const": true},
+    "external_dataset_name": {"type": ["string", "null"]},
+    "locked_utc": {"type": ["string", "null"], "format": "date-time"}
+  }
+}

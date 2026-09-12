@@ -1,0 +1,36 @@
+schema_version: geroprotector.manuscript_evidence_handoff.protocol.v1
+protocol_status: declared_before_manuscript_handoff_generation
+scientific_role: read_only_manuscript_evidence_packaging
+stamp: "20260826"
+title: "Structure-based geroprotector classifiers are biased against drug-like chemistry: a benchmarking and explainability analysis"
+sources:
+  integrated_report:
+    run_id: insight_suite_report_20260826
+    allowed_statuses: [COMPLETE]
+  kapsiani_reconstruction:
+    run_id: kapsiani_historical_benchmark_20260826
+    allowed_statuses: [COMPLETE_PROTOCOL_RECONSTRUCTION]
+  final_gb4:
+    run_id: quad_blend_20260822
+    allowed_statuses: [COMPLETE]
+  gb4_component_xai:
+    run_id: blend_xai_v4_20260822
+    allowed_statuses: [COMPLETE]
+  shared_core_feature_xai:
+    run_id: blend_xai_v5_20260823
+    allowed_statuses: [COMPLETE]
+  prior_insight_analysis:
+    run_id: blend_insight_20260823
+    allowed_statuses: [COMPLETE]
+rules:
+  modify_source_runs: false
+  modify_manuscript: false
+  perform_new_model_selection: false
+  perform_new_inference: false
+  manuscript_primary_threshold: 0.5
+  gb4_feature_attribution_available: false
+  shared_three_component_core_feature_attribution_available: true
+  historical_exact_refit_may_be_approximated: false
+immutability:
+  destination_must_not_exist: true
+  hash_bind_all_artifacts: true

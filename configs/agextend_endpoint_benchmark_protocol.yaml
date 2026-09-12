@@ -1,0 +1,54 @@
+schema_version: geroprotector.agextend_endpoint_benchmark.protocol.v1
+protocol_status: declared_before_first_full_scale_run
+scientific_role: endpoint_aligned_cross_benchmark_evaluation_not_d1_external_validation
+sources:
+  root: external_data/agextend_2024
+  training_workbook: {file: 43587_2024_763_MOESM3_ESM.xlsx, sheet: Fig 1b}
+  supplementary_workbook: 43587_2024_763_MOESM2_ESM.xlsx
+  expected_uncurated: {rows: 972, positive: 583, negative: 389}
+  official_training_archive:
+    doi: https://doi.org/10.5281/zenodo.10034994
+    repository_commit: 07f40d60932c31e6baf280afd56ecc26ada449cd
+    fitted_model_sha256: c625f8caa2a63fce5466942ccea133a620d88f4ed35f0c46a86bb02e8972a2c3
+    exact_selected_features: 71
+curation:
+  identity: standardized_parent_connectivity_inchikey
+  collapse_concordant_duplicates: true
+  exclude_conflicting_identity_groups: true
+  primary_mixture_rule: exclude_more_than_one_organic_fragment
+  strict_multicomponent_sensitivity: true
+  annotate_d1_overlap: true
+  create_d1_nonoverlap_sensitivity: true
+evaluation:
+  splitter: StratifiedKFold
+  n_splits: 10
+  shuffle: true
+  random_state: 42
+  fixed_threshold: 0.5
+  report_pooled_and_fold_mean_sd: true
+  component_seed_rule: 42_plus_fold_index
+panel: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm, catboost_full,
+        xgboost_full, lightgbm_full, tabm_full, blend3_equal, gb4_equal]
+metrics: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1,
+          brier, cohen_kappa, recall_sensitivity, specificity]
+challenge:
+  sheet: Supplementary Table 6
+  remove_training_identity_overlap: true
+  score_once: true
+  selection_or_calibration_on_challenge: false
+  primary_role: positive_retrieval_and_ranking
+bias_audit:
+  active_fit_fold_tanimoto_primary: true
+  d1_train_tanimoto_secondary: true
+  repeat_complete_experiment_a_controls: true
+reference_reproduction:
+  require_official_repository_and_archive_audit_before_blocked_verdict: true
+  published_result_extraction: reproducible
+  official_model_inference: reproducible_in_pinned_environment
+  official_84_compound_challenge_parity_protocol: configs/agextend_official_reference_protocol.yaml
+  exact_historical_refit: BLOCKED_PARTIAL
+  missing_for_exact_refit: [split_membership, fold_identities, random_seeds,
+                            complete_training_script, smote_and_boruta_random_states]
+  guessing_missing_features_or_folds: false
+leakage: {challenge_outcomes_used_for_selection: false, d1_test_used_for_selection: false}
+immutability: {existing_outputs_modified: false, destination_must_not_exist: true}

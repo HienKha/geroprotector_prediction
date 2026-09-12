@@ -1,0 +1,5 @@
+name,original_smiles,curated_smiles,curation_method,source_url,source_cid,note
+694436-62-9,OC=1C=CC=CC1[NH]2C=CC=3C=4C=CC=CC4NC3C2,C1C2=C(C=C[NH+]1C3=CC=CC=C3O)C4=CC=CC=C4N2,mass_matched_valence_repair,https://pubchem.ncbi.nlm.nih.gov/compound/163155540,163155540,RDKit-valid protonated form from PubChem fastidentity; matches supplied descriptor mass
+356073-89-7,OC1=CC=CC=2C=3C=C[NH](C)CC3NC12,C[NH+]1CC2=C(C=C1)C3=C(N2)C(=CC=C3)O,mass_matched_valence_repair,https://pubchem.ncbi.nlm.nih.gov/compound/163159326,163159326,RDKit-valid protonated form from PubChem fastidentity; matches supplied descriptor mass
+535-83-1,O=C(O)C=1C=CC[NH](C1)C,C[NH+]1CC=CC(=C1)C(=O)O,mass_matched_valence_repair,https://pubchem.ncbi.nlm.nih.gov/compound/163142004,163142004,RDKit-valid protonated form from PubChem fastidentity; matches supplied descriptor mass
+445-30-7,O=C(O)C1C=CC=C[NH]1C,C[NH+]1C=CC=CC1C(=O)O,mass_matched_valence_repair,https://pubchem.ncbi.nlm.nih.gov/compound/163173951,163173951,RDKit-valid protonated form from PubChem fastidentity; matches supplied descriptor mass

@@ -1,0 +1,3 @@
+# Additional packages used only by scripts/run_traditional_paper405.sh.
+catboost==1.2.10
+lightgbm==4.6.0

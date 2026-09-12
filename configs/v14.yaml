@@ -1,0 +1,28 @@
+pipeline: V14_CHEMISTRY_PRIOR_FITTED_NETWORK
+pretraining_corpus:
+  sources: [ChEMBL, COCONUT, optional_ZINC]
+  standardize_and_deduplicate: true
+  quarantine_target_identities: true
+feature_panels: [chemistry_64, fingerprint_latent_128, frozen_foundation_128, mixed_320]
+task_generator:
+  families: [sparse_linear, nonlinear_interactions, tanimoto_prototypes, smarts_rules, graph_teacher, multimodal_teacher, scaffold_shift, PU_noise, assay_noise, adversarial]
+  n_context: [32, 64, 128, 256, 384, 512]
+  n_query: [16, 32, 64, 128]
+  n_features: [16, 32, 64, 128, 256, 512]
+  scaffold_shift_probability: 0.40
+  pu_task_probability: 0.25
+  multimodal_task_probability: 0.30
+architecture:
+  row_encoder_layers: [2, 4]
+  row_d_model: [128, 256]
+  context_layers: [6, 8, 12]
+  context_d_model: [256, 384, 512]
+  retrieval_context_only: true
+pretraining:
+  pilot_tasks: [100000, 500000]
+  full_tasks: [10000000, 30000000]
+  target_labels_used: false
+adaptation: [pure_icl, lightweight_encoder, context_only_ttt, optional_lora]
+checkpoint_selection:
+  use_public_molecular_benchmarks: true
+  use_target_outer_test: false

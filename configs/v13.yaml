@@ -1,0 +1,33 @@
+pipeline: V13_INCREMENTAL_ACTIVE_LEARNING
+base_model: LOCK_BEFORE_ROUND
+candidate_pool:
+  source_versions: REQUIRED_AT_RUNTIME
+  exact_historical_overlap_exclusion: true
+  availability_required: true
+  assay_interference_filter: true
+endpoint:
+  primary: log_median_lifespan_ratio
+  binary_secondary: significant_increase_without_unacceptable_toxicity
+  observation_level_storage: true
+acquisition:
+  batch_size: 32
+  portfolios:
+    exploitation: {prediction: 0.50, uncertainty: 0.10, diversity: 0.15, applicability: 0.15, feasibility: 0.10}
+    balanced: {prediction: 0.30, uncertainty: 0.25, diversity: 0.20, applicability: 0.15, feasibility: 0.10}
+    exploration: {prediction: 0.15, uncertainty: 0.35, diversity: 0.25, applicability: 0.15, feasibility: 0.10}
+  selected_portfolio: balanced
+  pairwise_tanimoto_cap: 0.70
+batch_composition:
+  exploitation: 12
+  uncertainty_diversity: 8
+  random: 4
+  known_positive_controls: 3
+  known_null_negative_controls: 3
+  blinded_duplicates: 2
+blinding:
+  hash_predictions_before_outcomes: true
+  hide_rank_from_assay_team: true
+update:
+  primary: full_history_retrain_from_scratch
+  optional_continual: [replay, EWC, adapter_distillation]
+  compare_to_full_retrain: true

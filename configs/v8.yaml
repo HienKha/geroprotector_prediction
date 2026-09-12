@@ -1,0 +1,33 @@
+pipeline: V8_MOLECULAR_FOUNDATION_FUSION
+extends: [data.yaml, validation.yaml]
+encoders:
+  smiles:
+    family: molformer_or_chemberta
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    frozen_primary: true
+    randomized_smiles_views: [1, 5, 10]
+  graph:
+    family: graphmvp_or_molclr
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    frozen_primary: true
+  three_d:
+    family: unimol
+    checkpoint_sha256: REQUIRED_AT_RUNTIME
+    enabled: true
+    conformers_generate: 20
+    conformers_retain: 5
+    conformer_seed: 20260408
+  optional_mjepa:
+    enabled: false
+projection_dim: [32, 64, 96, 128]
+fusion: [concat, gated]
+heads: [elastic_net, extra_trees, mlp, tabm_mini]
+regularization:
+  modality_dropout: [0.0, 0.1, 0.2, 0.3]
+  lambda_consistency: [0.0, 0.05, 0.1, 0.2]
+  lambda_diversity: [0.0, 0.001, 0.01, 0.05]
+adapter_tuning:
+  enabled_after_frozen_stage: true
+  trainable_parameter_cap: 0.02
+search:
+  optuna_trials_per_outer_job: 40

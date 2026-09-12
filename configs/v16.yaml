@@ -1,0 +1,42 @@
+pipeline: V16_GEROLLM_CROSS_MODAL_DML
+extends: [data.yaml, validation.yaml]
+method_scope: independent_GeroLLM_inspired_not_exact_reproduction
+text_branch:
+  encoders: [pinned_chemical_language_model, optional_general_llm]
+  checkpoint_sha256: REQUIRED_AT_RUNTIME
+  text_modes: [canonical_smiles, canonical_plus_selfies, structure_property_template]
+  forbidden_fields: [compound_name, source, indication, abstract, aging_status, geroprotector_status, lifespan_outcome]
+  randomized_smiles_views: [1, 5, 10]
+  frozen_primary: true
+  lora:
+    enabled_secondary: true
+    rank: [2, 4, 8]
+    alpha: [8, 16, 32]
+    trainable_parameter_cap: 0.02
+graph_branch:
+  encoder: GINE
+  initialization: [frozen_pretrained, scratch_control]
+  hidden_dim: [64, 96, 128, 192]
+  n_layers: [2, 3, 4, 5]
+projection_dim: [64, 96, 128]
+mutual_learning:
+  variants: [none, symmetric_DML, loss_differentiated_DML]
+  lambda_dml: [0.05, 0.10, 0.20]
+  mutual_temperature: [2.0, 4.0]
+  differentiation_temperature: [0.25, 0.50]
+  teacher_stop_gradient: true
+anti_collapse:
+  lambda_decorrelation: [0.001, 0.01]
+fusion:
+  types: [simple_concat, late_probability_average_control, gated]
+  hidden_dim: [64, 128, 192]
+  dropout: [0.1, 0.2, 0.3, 0.5]
+loss: [weighted_bce, focal_secondary, asymmetric_secondary]
+search:
+  hierarchical: true
+  max_trials_per_outer_job: 40
+mutagenesis:
+  atom_mask: true
+  bond_mask: true
+  token_atom_mapping: true
+  repeat_stability_minimum: 3

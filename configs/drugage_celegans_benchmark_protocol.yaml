@@ -1,0 +1,63 @@
+schema_version: geroprotector.drugage_celegans_benchmark.protocol.v1
+protocol_status: declared_before_first_full_scale_run
+scientific_role: organism_specific_endpoint_aligned_benchmark_not_all_organism_stress_test
+sources:
+  root: external_data/drugage_build5
+  observations: drugage.csv
+  mapping: drugage_pubchem_smiles.csv
+  expected_observation_rows: 3423
+  organism: Caenorhabditis elegans
+  historical_official_supplement:
+    path: external_sources/41598_2021_93070_MOESM2_ESM.xlsx
+    sha256: e98da1592a44199ab809c7a42e018d7be255b6ae11b0b26829521f60fe3ae2c3
+    rows: 1430
+    positive: 304
+    curated_literature_negative: 1126
+    selected_moe_features: 69
+identity_and_label_order:
+  - map_observations_to_structure
+  - standardize_parent_and_connectivity_identity
+  - aggregate_all_synonyms_and_observations_by_connectivity
+  - derive_each_endpoint_label
+  - exclude_connectivity_level_conflicts_for_the_active_variant
+endpoint_variants:
+  significant_positive:
+    primary: true
+    rule: at_least_one_significant_average_lifespan_increase
+    negative_class_name: no_recorded_significant_extension
+    negative_is_certified_biological_non_geroprotector: false
+    not_equivalent_to_kapsiani_literature_negative: true
+  consistent_positive:
+    primary: false
+    rule: all_finite_observations_increase_vs_all_nonincrease_else_exclude
+  conflict_excluded:
+    primary: false
+    rule: significant_positive_after_excluding_significant_increase_and_decrease_conflicts
+  refit_each_variant_separately: true
+evaluation:
+  primary: {splitter: StratifiedKFold, n_splits: 10, shuffle: true, random_state: 42}
+  repeated_sensitivity: {repeats: 5, folds: 5, seeds: [42, 43, 44, 45, 46]}
+  publication_grouped_sensitivity: {enabled: true, folds: 5, random_state: 20260825}
+  fixed_threshold: 0.5
+  component_seed_rule: 42_plus_fold_index_fixed_across_partition_repeats
+  report_pooled_and_fold_mean_sd: true
+panel: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm, catboost_full,
+        xgboost_full, lightgbm_full, tabm_full, blend3_equal, gb4_equal]
+metrics: [auprc_average_precision_positive, auroc, accuracy, mcc, macro_f1,
+          brier, cohen_kappa, recall_sensitivity, specificity]
+bias_audit:
+  active_fit_fold_tanimoto_primary: true
+  d1_train_tanimoto_secondary: true
+  repeat_complete_experiment_a_controls: true
+historical_reproduction:
+  require_official_article_supplement_retrieval_audit_before_blocked_verdict: true
+  official_cohort_and_labels: reproducible
+  exact_selected_moe_feature_identities: reproducible
+  exact_historical_rf_refit: BLOCKED_PARTIAL
+  fixed_panel_protocol_reconstruction: configs/kapsiani_historical_benchmark_protocol.yaml
+  paper_feature_selection_described_as_nested_inside_each_cv_fold: false
+  guessing_missing_moe_features_or_split: false
+leakage: {publication_identity_may_cross_folds_in_primary: true,
+          publication_grouped_sensitivity_required_if_feasible: true,
+          d1_or_external_outcomes_used_for_model_selection: false}
+immutability: {existing_outputs_modified: false, destination_must_not_exist: true}

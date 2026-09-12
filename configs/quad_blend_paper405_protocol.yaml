@@ -1,0 +1,96 @@
+schema_version: geroprotector.quad_blend_paper405.protocol.v1
+scientific_role: >-
+  four_component_blend_paper_svm_tanimoto_tabpfnv2_tabfm at a FIXED 0.5
+  threshold, evaluated at equal quarters and at OOF-searched weights.
+
+blend:
+  components: [paper_svm, tanimoto_svc, tabpfn_v2, tabfm]
+  equal_weight_set: [0.25, 0.25, 0.25, 0.25]
+  paper_svm_feature_set: paper_7_datawarrior_descriptors
+  paper_svm_hyperparameters: >-
+    SVC(kernel='linear', C=1, gamma=1, probability=True, random_state=42) as published
+
+contract:
+  fixed_threshold: 0.5
+  threshold_is_selected_or_tuned: false
+  any_model_is_refitted: false
+  test_or_external_labels_used_for_weights_or_threshold: false
+  weights_searched_on: 324_row_d1_train_cross_fitted_oof_only
+  nested_weight_search_reported: true
+  note: >-
+    The threshold is pinned at 0.5 for every model and cohort, as requested.
+    The paper SVM is additionally reported at its published operating point
+    (decision_function >= 0, p >= 0.5098302195333542) because that is what the
+    source paper's notebook uses; forcing it onto 0.5 alone would understate the
+    baseline.
+
+weight_search:
+  grid_step: 0.01
+  objectives: [mcc, auprc, macro_f1]
+  primary: mcc
+  primary_rationale: >-
+    With the threshold pinned at 0.5, MCC at that threshold is the natural
+    fixed-operating-point summary: chance-corrected and symmetric in both
+    classes. AUPRC and macro-F1 optima are reported alongside so the dependence
+    on the objective is visible rather than hidden.
+
+cross_validation:
+  n_splits: 5
+  shuffle: true
+  random_state: 42
+  rows: d1_train_only_324
+  fold_alignment_proof: >-
+    weightedblend405 (configs/weighted_blend_paper405.yaml: full_train_oof_folds
+    5, full_train_oof_seed 42) and screeningblend_tabfm (via
+    configs/fixed_blend_paper405.yaml: cross_fitted_oof_folds 5,
+    cross_fitted_oof_seed 42) both cross-fit with StratifiedKFold(5,
+    shuffle=True, random_state=42) on train_indices, so all four component OOF
+    streams share one fold structure and this is a genuine 5-fold CV.
+
+paper_split:
+  train_size: 0.8
+  random_state: 42
+  stratify: false
+  expected_assignment_sha256: 0eb31569408c3db463a097b016a1972ef83ce552edcfc7a41297bed4248ccdf8
+  expected_train_rows: 324
+  expected_test_rows: 81
+
+parity_contract:
+  shared_component_streams_must_match_across_source_runs: true
+  parity_atol: 1.0e-12
+  external_row_order_must_be_identical: true
+
+endpoints:
+  d1_paper_test: paper_binary
+  drugage: significant_positive_retrieval_background_not_certified_negative
+  agextend: published_independent_table6_binary
+
+sealed_inputs:
+  weighted_train_oof:
+    path: outputs/weightedblend405_20260817/full_train_oof_component_predictions.csv
+    sha256: 1750dfeb4b4f5afd8248525354f18f920326aceb96fbcf8459e849a7929381da
+  weighted_test_components:
+    path: outputs/weightedblend405_20260817/test_component_predictions.csv
+    sha256: e0b7bdc2012e791ba41b0ad13a1ea95613a86ddd641ac984bc982fbd572689dc
+  drugage_scored:
+    path: outputs/screeningblend_external_20260817/drugage/scored/scored_predictions.csv
+    sha256: 09aadd7b8ae08e8282599d07f23bc735112009b15a3beab92ab4320602ee1ece
+  agextend_scored:
+    path: outputs/screeningblend_external_20260817/agextend/scored/scored_predictions.csv
+    sha256: e5f0431af76839beaca7ffa09adb383b5181e12047ba9574d6dda4a5616fc90e
+  tabfm_train_oof:
+    path: outputs/screeningblend_tabfm_20260821/d1_train_oof_predictions.csv
+    sha256: b65ab9e8ecf45e7965afad1f0214c73734ffb0b20b379b644bb2ed6a982d2121
+  tabfm_test:
+    path: outputs/screeningblend_tabfm_20260821/d1_test_predictions.csv
+    sha256: 26bde3f7ad3a8f63b3ce9ae8fe2f8688e8cbc9ada299b008d6bd06c609a0facd
+  tabfm_drugage:
+    path: outputs/screeningblend_tabfm_20260821/external_predictions_drugage.csv
+    sha256: d8cfd6520737ee31b318d988b51ff1d69e0716589c38e4bc7b4a25e60f6a07a6
+  tabfm_agextend:
+    path: outputs/screeningblend_tabfm_20260821/external_predictions_agextend.csv
+    sha256: 1a802c26a203d85e1b7e4ee1b3ab4ca0b9788eaaf99e82d6df9572d58d4158a5
+
+immutability:
+  existing_run_directories_are_read_only: true
+  new_run_directory_must_not_exist: true
